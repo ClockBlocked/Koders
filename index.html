@@ -19,12 +19,383 @@
     <meta name="twitter:image" content="thumbnail.jpg" />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="./global.css" />
+    <link rel="stylesheet" href="./newest.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.css" rel="stylesheet" />
     <link href="https://dev.wuaze.com/styleSheets/fonts.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+      
+      
+      
+      
+/* Enhanced Now Playing Card Styles with Bouncy Animations */
+
+:root {
+  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
+  --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.4s;
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Enhanced popup base styles */
+.now-playing-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: min(420px, 90vw);
+  max-height: 85vh;
+  background: var(--bg-default);
+  border: 1px solid var(--border-accent);
+  border-radius: 24px;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 10px 25px rgba(0, 0, 0, 0.3),
+    var(--shadow-glow);
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-bounce);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  will-change: transform, opacity;
+}
+
+.now-playing-popup.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Enhanced header with subtle animation */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, var(--bg-subtle) 0%, var(--bg-default) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.popup-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fg-default);
+  margin: 0;
+  background: linear-gradient(135deg, var(--fg-default) 0%, var(--accent-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced close button */
+.popup-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--fg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.popup-close::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+
+.popup-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--fg-default);
+  transform: scale(1.1) rotate(90deg);
+}
+
+.popup-close:hover::before {
+  opacity: 1;
+}
+
+/* Enhanced album cover with advanced effects */
+.popup-album-cover {
+  width: 200px;
+  height: 200px;
+  border-radius: 20px;
+  margin: 24px auto 20px;
+  object-fit: cover;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.popup-album-cover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  opacity: 0;
+  transition: all var(--transition-smooth);
+  transform: translateX(-100%);
+}
+
+.popup-album-cover:hover {
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 10px 25px rgba(0, 0, 0, 0.3),
+    var(--shadow-glow);
+}
+
+.popup-album-cover:hover::before {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+/* Rotating animation for playing state */
+.album-cover-rotating {
+  animation: albumRotate 8s linear infinite;
+}
+
+@keyframes albumRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Enhanced song info with staggered animations */
+.popup-song-info {
+  text-align: center;
+  padding: 0 24px;
+  margin-bottom: 24px;
+}
+
+.popup-song-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--fg-default);
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  background: linear-gradient(135deg, var(--fg-default) 0%, var(--accent-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all var(--transition-smooth);
+}
+
+.popup-artist-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  margin: 0 0 4px 0;
+  transition: all var(--transition-smooth);
+}
+
+.popup-album-name {
+  font-size: 0.9rem;
+  color: var(--fg-subtle);
+  margin: 0;
+  transition: all var(--transition-smooth);
+}
+
+/* Enhanced progress section */
+.popup-progress {
+  padding: 0 24px;
+  margin-bottom: 32px;
+}
+
+.progress-time {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: var(--bg-muted);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+}
+
+.progress-bar:hover {
+  height: 10px;
+  transform: scale(1.02);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary, #3b82f6) 100%);
+  border-radius: 4px;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Enhanced control buttons */
+.popup-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 24px 24px;
+}
+
+.control-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fg-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+}
+
+.control-btn.primary {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary, #3b82f6) 100%);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+}
+
+.control-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+
+.control-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.primary:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
+}
+
+.control-btn:hover::before {
+  opacity: 1;
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+/* Micro-interactions */
+@keyframes buttonRipple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Responsive enhancements */
+@media (max-width: 480px) {
+  .now-playing-popup {
+    width: 95vw;
+    max-height: 90vh;
+  }
+  
+  .popup-album-cover {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .popup-song-title {
+    font-size: 1.2rem;
+  }
+  
+  .control-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .control-btn.primary {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-subtle) 50%, var(--bg-muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+      
+      
+    </style>
+
 
 <style>
 .popup-content {
@@ -785,7 +1156,7 @@
         </div>
       </div>
 
-      <div id="mainArea" class="pt-4">
+      <div id="mainArea">
         <main id="main-container" class="content-container max-w-6xl mx-auto pb-24">
           <div id="contentWrapper" class="relative">
             <nav id="breadcrumb-nav" class="breadcrumb-navigation flex items-center text-fg-muted">
