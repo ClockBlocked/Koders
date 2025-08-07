@@ -1,11 +1,27 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
-  <head> 
+  <head>
+
+
+  
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P0KCT8TSPW">
+</script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P0KCT8TSPW');
+</script>    
+<!------------------------------------------------------------>    
+    
+    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Music Player</title>
     <link rel="manifest" href="./system/manifest.json" />
-    <meta name="theme-color" content="#1C2128" />
+    <meta name="theme-color" content="#323a44" />
     <meta name="description" content="A sleek and modern web-based music player." />
     <meta name="keywords" content="music, player, web, audio, streaming, playlist, songs, albums, artists" />
     <meta name="author" content="ClockBlocked" />
@@ -19,7 +35,7 @@
     <meta name="twitter:image" content="thumbnail.jpg" />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="./newest.css" />
+    <link rel="stylesheet" href="./global.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.css" rel="stylesheet" />
     <link href="https://dev.wuaze.com/styleSheets/fonts.css" rel="stylesheet" />
@@ -27,766 +43,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-      
-      
-      
-      
-/* Enhanced Now Playing Card Styles with Bouncy Animations */
 
-:root {
-  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
-  --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.4s;
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
-}
 
-/* Enhanced popup base styles */
-.now-playing-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
-  width: min(420px, 90vw);
-  max-height: 85vh;
-  background: var(--bg-default);
-  border: 1px solid var(--border-accent);
-  border-radius: 24px;
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.4),
-    0 10px 25px rgba(0, 0, 0, 0.3),
-    var(--shadow-glow);
-  backdrop-filter: blur(20px);
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all var(--transition-bounce);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  will-change: transform, opacity;
-}
 
-.now-playing-popup.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-/* Enhanced header with subtle animation */
-.popup-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: linear-gradient(135deg, var(--bg-subtle) 0%, var(--bg-default) 100%);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(10px);
-}
-
-.popup-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--fg-default);
-  margin: 0;
-  background: linear-gradient(135deg, var(--fg-default) 0%, var(--accent-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Enhanced close button */
-.popup-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: var(--fg-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
-
-.popup-close::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity var(--transition-smooth);
-}
-
-.popup-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--fg-default);
-  transform: scale(1.1) rotate(90deg);
-}
-
-.popup-close:hover::before {
-  opacity: 1;
-}
-
-/* Enhanced album cover with advanced effects */
-.popup-album-cover {
-  width: 200px;
-  height: 200px;
-  border-radius: 20px;
-  margin: 24px auto 20px;
-  object-fit: cover;
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.3),
-    0 5px 15px rgba(0, 0, 0, 0.2);
-  transition: all var(--transition-bounce);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.popup-album-cover::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  opacity: 0;
-  transition: all var(--transition-smooth);
-  transform: translateX(-100%);
-}
-
-.popup-album-cover:hover {
-  transform: scale(1.05) rotate(2deg);
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.4),
-    0 10px 25px rgba(0, 0, 0, 0.3),
-    var(--shadow-glow);
-}
-
-.popup-album-cover:hover::before {
-  opacity: 1;
-  transform: translateX(100%);
-}
-
-/* Rotating animation for playing state */
-.album-cover-rotating {
-  animation: albumRotate 8s linear infinite;
-}
-
-@keyframes albumRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Enhanced song info with staggered animations */
-.popup-song-info {
-  text-align: center;
-  padding: 0 24px;
-  margin-bottom: 24px;
-}
-
-.popup-song-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--fg-default);
-  margin: 0 0 8px 0;
-  line-height: 1.3;
-  background: linear-gradient(135deg, var(--fg-default) 0%, var(--accent-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all var(--transition-smooth);
-}
-
-.popup-artist-name {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--fg-muted);
-  margin: 0 0 4px 0;
-  transition: all var(--transition-smooth);
-}
-
-.popup-album-name {
-  font-size: 0.9rem;
-  color: var(--fg-subtle);
-  margin: 0;
-  transition: all var(--transition-smooth);
-}
-
-/* Enhanced progress section */
-.popup-progress {
-  padding: 0 24px;
-  margin-bottom: 32px;
-}
-
-.progress-time {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 0.85rem;
-  color: var(--fg-muted);
-  font-weight: 500;
-}
-
-.progress-bar {
-  position: relative;
-  width: 100%;
-  height: 8px;
-  background: var(--bg-muted);
-  border-radius: 4px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all var(--transition-smooth);
-}
-
-.progress-bar:hover {
-  height: 10px;
-  transform: scale(1.02);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary, #3b82f6) 100%);
-  border-radius: 4px;
-  transition: all var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-  animation: progressShimmer 2s ease-in-out infinite;
-}
-
-@keyframes progressShimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-/* Enhanced control buttons */
-.popup-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 0 24px 24px;
-}
-
-.control-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--fg-default);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-bounce);
-  position: relative;
-  overflow: hidden;
-}
-
-.control-btn.primary {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary, #3b82f6) 100%);
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-}
-
-.control-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity var(--transition-smooth);
-}
-
-.control-btn:hover {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.control-btn.primary:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
-}
-
-.control-btn:hover::before {
-  opacity: 1;
-}
-
-.control-btn:active {
-  transform: scale(0.95);
-}
-
-/* Micro-interactions */
-@keyframes buttonRipple {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-
-/* Responsive enhancements */
-@media (max-width: 480px) {
-  .now-playing-popup {
-    width: 95vw;
-    max-height: 90vh;
-  }
-  
-  .popup-album-cover {
-    width: 160px;
-    height: 160px;
-  }
-  
-  .popup-song-title {
-    font-size: 1.2rem;
-  }
-  
-  .control-btn {
-    width: 44px;
-    height: 44px;
-  }
-  
-  .control-btn.primary {
-    width: 56px;
-    height: 56px;
-  }
-}
-
-/* Loading states */
-.loading-shimmer {
-  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-subtle) 50%, var(--bg-muted) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-      
-      
-    </style>
-
-
-<style>
-.popup-content {
-  height: 600px;
-  padding: 2rem;
-  transition: all 0.65s ease-in-out;
-}
-.popup-tabs {
-  display: flex;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 15px;
-}
-
-.popup-tab {
-  flex: 1;
-  padding: 12px 0;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 500;
-  cursor: pointer;
-  position: relative;
-}
-
-.popup-tab.active {
-  color: white;
-}
-
-.popup-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--accent-color);
-}
-
-.popup-tab-content {
-  opacity: 1;
-  pointer-events: none;
-  transition: opacity 0.45s ease-in-out;
-}
-.popup-tab-content.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.popup-tab-content[data-tab="now-playing"] {
-  opacity: 1;
-  pointer-events: auto;
-  transition: 0.45s ease-in-out;
-}
-.popup-tab-content[data-tab="queue"].show {
-  opacity: 1;
-  pointer-events: auto;
-   transition: 0.45s ease-in-out;
-}
-.popup-tab-content[data-tab="recent"].show {
-  opacity: 1;
-  pointer-events: auto;
-   transition: 0.45s ease-in-out;
-}
-
-.popup-song-list {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.popup-song-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.popup-song-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.popup-song-cover {
-  width: 40px;
-  height: 40px;
-  border-radius: 4px;
-  margin-right: 12px;
-}
-
-.popup-song-info {
-  flex: 1;
-}
-
-.popup-song-title {
-  margin: 0;
-  font-size: 14px;
-}
-
-.popup-song-artist {
-  margin: 0;
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.popup-song-duration {
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.content-loading {
-  position: absolute;
-  inset: 0;
-  z-index: 9999;
-  background-color: rgba(13, 17, 23, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  will-change: opacity;
-}
-
-.content-loading.opacity-100 {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.album-image {
-    width: 100%;
-    height: 200px;
-    border-radius: 15px;
-}
-
-.artistBottom h3 {
-    color: whitesmoke;
-    border-radius: 5px;
-    padding: 3px 8px;
-    opacity: 0.35;
-    transition: opacity 0.65s ease-in-out;
-    backdrop-filter: blur(20px);
-    transform: translate(-15px, -50px);
-}
-
-.artistBottom:hover h3 {
-    opacity: 1;
-}
-
-.artistBottom > p {
-    color: whitesmoke;
-    border-radius: 5px;
-    padding: 3px 8px;
-    opacity: 0.35;
-    transition: opacity 0.65s ease-in-out 1s;
-    backdrop-filter: blur(20px);
-    transform: translate(-15px, -50px);
-}
-
-.artistBottom:hover p {
-    opacity: 1;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.875rem;
-}
-
-.search-dialog {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 10vh;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.search-dialog:not(.hidden) {
-  opacity: 1;
-}
-
-.search-dialog-content {
-  background: var(--bg-default);
-  border: 1px solid var(--border-default);
-  width: 100%;
-  max-width: 600px;
-  margin: 0 1rem;
-}
-
-.search-dialog-opening .search-dialog-content {
-  animation: slideInDown 0.4s ease-out;
-}
-
-.search-dialog-closing .search-dialog-content {
-  animation: slideOutUp 0.3s ease-in;
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideOutUp {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-}
-
-
-
-
-
-
-/* Apple Music / YouTube Music Style Song Lists */
-.popup-song-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 300px;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.popup-song-list::-webkit-scrollbar {
-  display: none;
-}
-
-.popup-song-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  min-height: 56px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.popup-song-item:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-.popup-song-item:active {
-  background-color: rgba(255, 255, 255, 0.12);
-}
-
-.popup-song-item.playing {
-  background-color: rgba(83, 155, 245, 0.1);
-}
-
-.popup-song-cover {
-  width: 40px;
-  height: 40px;
-  border-radius: 4px;
-  margin-right: 16px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background-color: var(--backgroundMuted);
-}
-
-.popup-song-info {
-  flex: 1;
-  min-width: 0;
-  margin-right: 16px;
-}
-
-.popup-song-title {
-  margin: 0 0 2px 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--textPrimary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-}
-
-.popup-song-item.playing .popup-song-title {
-  color: var(--accentPrimary);
-  font-weight: 500;
-}
-
-.popup-song-artist {
-  margin: 0;
-  font-size: 12px;
-  color: var(--textSecondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-  font-weight: 400;
-}
-
-.popup-song-duration {
-  font-size: 12px;
-  color: var(--textSecondary);
-  flex-shrink: 0;
-  font-weight: 400;
-  min-width: 32px;
-  text-align: right;
-}
-
-.popup-song-item.playing .popup-song-duration {
-  color: var(--accentPrimary);
-}
-
-/* Empty state */
-.popup-song-list .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  color: var(--textSecondary);
-  font-size: 14px;
-  text-align: center;
-}
-
-.popup-song-list .empty-state::before {
-  content: '♪';
-  font-size: 32px;
-  margin-bottom: 8px;
-  opacity: 0.5;
-}
-
-/* Playing indicator (small equalizer bars) */
-.popup-song-item.playing .popup-song-title::after {
-  content: '';
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-left: 8px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23539bf5'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  vertical-align: middle;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .popup-song-item {
-    padding: 8px 12px;
-    min-height: 52px;
-  }
-  
-  .popup-song-cover {
-    width: 36px;
-    height: 36px;
-    margin-right: 12px;
-  }
-  
-  .popup-song-info {
-    margin-right: 12px;
-  }
-  
-  .popup-song-title {
-    font-size: 13px;
-  }
-  
-  .popup-song-artist {
-    font-size: 11px;
-  }
-  
-  .popup-song-duration {
-    font-size: 11px;
-    min-width: 28px;
-  }
-}
-</style>
   </head>
 
   <body>
+    <!-- Hidden YouTube player -->
+<div id="youtube-audio-wrapper" style="position: absolute; left: -9999px;">
+  <div id="youtube-player"></div>
+</div>
     <div id="pageWrapper">
       <nav id="navbar" class="glass-effect">
         <div class="navbar-content">
@@ -849,6 +115,7 @@
         </div>
       </nav>
 
+<!-- Main Menu -->
       <div class="dropdown-menu" id="dropdown-menu">
         <div class="dropdown-header">
           <h3 class="dropdown-title">Music Library</h3>
@@ -1031,26 +298,23 @@
         </div>
       </div>
 
-      <div class="now-playing-popup" id="now-playing-popup">
-        
-        
-        <div id="offcanvas-handle" class="offcanvas-handle flex items-center justify-center py-1">
+
+
+<!-- Music Player -->
+      <div class="musicPlayer" id="musicPlayer">
+      <div id="offcanvas-handle"
+           class="offcanvas-handle flex items-center justify-center py-1">
           <div class="w-10 h-1 bg-gray-500 rounded-full"></div>
         </div>
 
-        <div class="popup-tabs">
-          <button class="popup-tab active" data-tab="now-playing">Now Playing</button>
-          <button class="popup-tab" data-tab="queue">Up Next</button>
-          <button class="popup-tab" data-tab="recent">Recent Plays</button>
-        </div>
         
         
         
         
         
         
-        <div class="popup-header">
-          <button class="popup-close" id="popup-close">
+        <div class="header">
+          <button class="close" id="closePlayer">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
@@ -1058,7 +322,7 @@
         </div>
 
 
-        <div class="popup-content">
+        <div class="body">
           <div class="popup-tab-content" data-tab="now-playing">
             <img id="popup-album-cover" src="" alt="Album Cover" class="popup-album-cover" />
 
@@ -1080,20 +344,72 @@
               </div>
             </div>
 
-            <div class="popup-controls">
-              <button class="popup-control-btn" id="popup-shuffle-btn" title="Shuffle">
+
+
+
+<div class="playerControls">
+  
+  
+  <!-- Skip to Previous Song -->
+  <button class="button" id="popup-prev-btn">
+    <svg class="icon" id="iconPrev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+      <path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4L75.5 231l0 49 192 160z" />
+    </svg>
+  </button>
+
+  <!-- Rewind 10s -->
+  <button class="button" id="reWind">
+    <svg class="icon" id="iconRewind" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <path d="M459.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4L288 214.3V296l171.5 144.6zM256 352V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4L11.5 231C4.2 237.5 0 246.5 0 256s4.2 18.5 11.5 24.6l192 160c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V352z"/>
+    </svg>
+  </button>
+
+  <!-- Play / Pause (toggle dynamically) -->
+  <button class="button" id="playPause">
+    <svg class="icon" id="iconPlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+      <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+    </svg>
+    <!-- You can dynamically switch to this icon on pause -->
+    <!-- <svg class="icon" id="iconPause" ... >...</svg> -->
+  </button>
+
+  <!-- Fast Forward 10s -->
+  <button class="button" id="fastFoward">
+    <svg class="icon" id="iconForward" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4L224 214.3V296L52.5 440.6zM256 352V96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4l192 160c7.3 6.1 11.5 15.1 11.5 24.6s-4.2 18.5-11.5 24.6L308.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S256 428.4 256 416V352z"/>
+    </svg>
+  </button>
+
+  <!-- Skip to Next Song -->
+  <button class="button" id="popup-next-btn">
+    <svg class="icon" id="iconNext" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+      <path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4l192 160V96c0-17.7 14.3-32 32-32s32 14.3 32 32v320c0 17.7-14.3 32-32 32s-32-14.3-32-32V271.4L52.5 440.6z"/>
+    </svg>
+  </button>
+
+
+</div>
+      
+              
+              
+              
+              
+              
+              
+ <!--             
+              <button class="button" id="popup-shuffle-btn" title="Shuffle">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
                 </svg>
               </button>
 
-              <button class="popup-control-btn" id="popup-prev-btn" title="Previous">
+              <button class="button" id="popup-prev-btn" title="Previous">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z" />
                 </svg>
               </button>
 
-              <button class="popup-control-btn play-pause" id="popup-play-pause-btn">
+              <button class="button" id="playPause">
                 <svg id="popup-play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                 </svg>
@@ -1102,18 +418,20 @@
                 </svg>
               </button>
 
-              <button class="popup-control-btn" id="popup-next-btn" title="Next">
+              <button class="button" id="popup-next-btn" title="Next">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798L4.555 5.168z" />
                 </svg>
               </button>
 
-              <button class="popup-control-btn" id="popup-repeat-btn" title="Repeat">
+              <button class="button" id="popup-repeat-btn" title="Repeat">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
                 </svg>
               </button>
-            </div>
+ -->             
+              
+              
 
             <div class="popup-actions">
               <button class="popup-action-btn" id="popup-favorite-btn" title="Add to Favorites">
@@ -1142,18 +460,35 @@
             </div>
           </div>
 
+
+<!-- Up Next -->
           <div class="popup-tab-content" data-tab="queue">
             <ul id="queue-list" class="popup-song-list">
               <li class="empty-state">Queue is empty</li>
             </ul>
           </div>
 
+
+<!-- Recently Played -->
           <div class="popup-tab-content" data-tab="recent">
             <ul id="recent-list" class="popup-song-list">
               <li class="empty-state">No recently played songs</li>
             </ul>
           </div>
+          
+          
+
+          
         </div>
+        <div id="popUpTabsWrapper">
+        
+               <div class="popup-tabs">
+          <button class="popup-tab active" data-tab="now-playing">Now Playing</button>
+          <button class="popup-tab" data-tab="recent">Recent Plays</button>
+          <button class="popup-tab" data-tab="queue">Up Next</button>
+        </div> 
+        </div>
+        
       </div>
 
       <div id="mainArea">
@@ -1161,6 +496,10 @@
           <div id="contentWrapper" class="relative">
             <nav id="breadcrumb-nav" class="breadcrumb-navigation flex items-center text-fg-muted">
               <ol class="breadcrumb-list flex items-center flex-wrap"></ol>
+              
+              
+              
+              
             </nav>
 
             <div id="dynamic-content">
@@ -1335,7 +674,7 @@
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function() {
           navigator.serviceWorker
-            .register("/service-worker.js")
+            .register("./system//serviceWorker.js")
             .then(function(registration) {
               console.log("Service Worker registered with scope:", registration.scope);
             })
