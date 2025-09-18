@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyTunes Global.js Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #10b981;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border: #334155;
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .loading-overlay {
+            background: linear-gradient(45deg, var(--bg-primary), var(--bg-secondary));
+        }
+
+        .code-block {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+        }
+
+        .sidebar-item {
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .sidebar-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left: 3px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .tooltip-content {
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        .search-highlight {
+            background: rgba(251, 191, 36, 0.3);
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        .method-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .method-function {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .method-object {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .method-property {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .method-class {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .method-array {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+        }
+
+        .syntax-highlight {
+            position: relative;
+        }
+
+        .syntax-highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(59, 130, 246, 0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .syntax-highlight:hover::before {
+            opacity: 1;
+        }
+
+        /* Loading animation fix */
+        .loading-progress {
+            transition: width 0.3s ease;
+        }
+
+        /* Error state styles */
+        .error-state {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 loading-overlay flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-lg font-medium">Loading Documentation...</p>
+            <div class="mt-2 w-64 bg-slate-700 rounded-full h-2">
+                <div id="loading-progress" class="loading-progress bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+            <p id="loading-status" class="text-sm text-slate-400 mt-2">Initializing...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 glass border-b border-slate-700 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-music text-blue-500 text-xl"></i>
+                        <h1 class="text-xl font-bold gradient-text">MyTunes Docs</h1>
+                    </div>
+                    <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">v1.0.0</span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" id="global-search" placeholder="Search documentation..." 
+                               class="bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 pl-10 w-64 focus:outline-none focus:border-blue-500 transition-colors">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    <!-- Menu -->
+                    <div class="relative">
+                        <button id="menu-toggle" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div id="menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-lg p-2">
+                            <a href="#" class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-slate-300 hover:bg-slate-700">
+                                <i class="fas fa-download"></i>
+                                Download Source
+                            </a>
+                            <a href="https://github.com/ClockBlocked/myTunesMusic" target="_blank" class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-slate-300 hover:bg-slate-700">
+                                <i class="fab fa-github"></i>
+                                GitHub Repository
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-16 bottom-0 w-80 bg-slate-800/50 border-r border-slate-700 overflow-y-auto">
+            <div class="p-6">
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold mb-4">Documentation</h2>
+                    
+                    <!-- Quick Filter -->
+                    <div class="mb-4">
+                        <select id="filter-type" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                            <option value="all">All Items</option>
+                            <option value="object">Objects</option>
+                            <option value="function">Functions</option>
+                            <option value="property">Properties</option>
+                            <option value="class">Classes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Navigation Tree -->
+                <nav id="sidebar-nav" class="space-y-1">
+                    <div class="loading-skeleton">
+                        <div class="animate-pulse space-y-2">
+                            <div class="h-4 bg-slate-700 rounded"></div>
+                            <div class="h-4 bg-slate-700 rounded w-4/5"></div>
+                            <div class="h-4 bg-slate-700 rounded w-3/5"></div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="ml-80 flex-1 min-h-screen">
+            <div class="max-w-4xl mx-auto p-8">
+                <!-- Welcome Section -->
+                <section id="welcome-section" class="mb-12 fade-in">
+                    <div class="text-center mb-8">
+                        <h1 class="text-4xl font-bold gradient-text mb-4">MyTunes Global.js Documentation</h1>
+                        <p class="text-xl text-slate-400 max-w-2xl mx-auto">
+                            Comprehensive documentation for the MyTunes music player application. 
+                            Explore functions, objects, and implementation details.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="glass rounded-xl p-6 hover:border-blue-500/50 transition-all cursor-pointer" data-section="getting-started">
+                            <div class="text-blue-500 text-2xl mb-3">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Getting Started</h3>
+                            <p class="text-slate-400 text-sm">Learn the basics and core concepts</p>
+                        </div>
+
+                        <div class="glass rounded-xl p-6 hover:border-green-500/50 transition-all cursor-pointer" data-section="api-reference">
+                            <div class="text-green-500 text-2xl mb-3">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">API Reference</h3>
+                            <p class="text-slate-400 text-sm">Detailed API documentation</p>
+                        </div>
+
+                        <div class="glass rounded-xl p-6 hover:border-purple-500/50 transition-all cursor-pointer" data-section="examples">
+                            <div class="text-purple-500 text-2xl mb-3">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Examples</h3>
+                            <p class="text-slate-400 text-sm">Code examples and tutorials</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-500" id="stats-objects">0</div>
+                            <div class="text-sm text-slate-400">Objects</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-green-500" id="stats-functions">0</div>
+                            <div class="text-sm text-slate-400">Functions</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-purple-500" id="stats-properties">0</div>
+                            <div class="text-sm text-slate-400">Properties</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-yellow-500" id="stats-lines">2847</div>
+                            <div class="text-sm text-slate-400">Lines of Code</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Content Area -->
+                <section id="content-area" class="hidden">
+                    <!-- This will be dynamically populated -->
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-action">
+        <button id="scroll-to-top" class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all transform hover:scale-110 hidden">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Simple fallback for missing dependencies
+        window.tippy = window.tippy || function() { return { setProps: function() {} }; };
+        window.Prism = window.Prism || { highlightAll: function() {}, highlightElement: function() {} };
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,1679 @@
+// Fixed Documentation Application
+class DocsApp {
+    constructor() {
+        this.currentSection = null;
+        this.searchIndex = [];
+        this.codeStructure = {};
+        this.isInitialized = false;
+        
+        // Make instance globally available
+        window.docsAppInstance = this;
+        
+        this.init().catch(error => {
+            console.error('Failed to initialize docs app:', error);
+            this.showError('Failed to load documentation. Please refresh the page.');
+        });
+    }
+
+    async init() {
+        try {
+            this.updateLoadingStatus('Loading code structure...');
+            await this.loadCodeStructure();
+            
+            this.updateLoadingStatus('Setting up event listeners...');
+            this.setupEventListeners();
+            
+            this.updateLoadingStatus('Rendering sidebar...');
+            this.renderSidebar();
+            
+            this.updateLoadingStatus('Updating statistics...');
+            this.updateStats();
+            
+            this.updateLoadingStatus('Finalizing...');
+            this.setupSyntaxHighlighting();
+            this.initializeTooltips();
+            this.setupTheme();
+            this.setupAccessibility();
+            
+            this.isInitialized = true;
+            this.hideLoadingScreen();
+        } catch (error) {
+            console.error('Initialization error:', error);
+            this.showError('Failed to initialize documentation.');
+        }
+    }
+
+    updateLoadingStatus(status) {
+        const statusElement = document.getElementById('loading-status');
+        if (statusElement) {
+            statusElement.textContent = status;
+        }
+    }
+
+    showError(message) {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.innerHTML = `
+                <div class="text-center">
+                    <div class="text-red-500 text-4xl mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2 class="text-xl font-bold mb-4">Error Loading Documentation</h2>
+                    <p class="text-slate-400 mb-6">${message}</p>
+                    <button onclick="location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-redo mr-2"></i>Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    async loadCodeStructure() {
+        const progressBar = document.getElementById('loading-progress');
+        let progress = 0;
+        
+        const updateProgress = (value) => {
+            progress = value;
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+        };
+
+        updateProgress(20);
+        await this.sleep(100);
+        
+        // Parse the JavaScript code structure
+        this.codeStructure = this.parseCodeStructure();
+        updateProgress(60);
+        await this.sleep(100);
+        
+        // Build search index
+        this.buildSearchIndex();
+        updateProgress(80);
+        await this.sleep(100);
+        
+        updateProgress(100);
+        await this.sleep(200);
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    parseCodeStructure() {
+        return {
+            ACTION_GRID_ITEMS: {
+                type: 'array',
+                description: 'Configuration array for action grid items in the UI',
+                example: `const ACTION_GRID_ITEMS = [
+  { id: 'play-next', icon: 'M9 5l7 7-7 7M15 5v14', label: 'Play Next' },
+  { id: 'add-queue', icon: 'M12 6v6m0 0v6m0-6h6m-6 0H6', label: 'Add to Queue' }
+];`
+            },
+            AppState: {
+                type: 'class',
+                description: 'Main application state management class that handles all global state',
+                methods: {
+                    constructor: {
+                        type: 'function',
+                        description: 'Initializes the application state with default values',
+                        parameters: [],
+                        returns: 'void',
+                        example: 'const appState = new AppState();'
+                    }
+                },
+                properties: {
+                    audio: { type: 'HTMLAudioElement', description: 'HTML audio element for music playback' },
+                    currentSong: { type: 'Object', description: 'Currently playing song object with metadata' },
+                    isPlaying: { type: 'boolean', description: 'Current playback state (true/false)' },
+                    favorites: { type: 'Object', description: 'User favorites management system' },
+                    queue: { type: 'Object', description: 'Music queue management system' }
+                },
+                example: `class AppState {
+  constructor() {
+    this.audio = null;
+    this.currentSong = null;
+    this.isPlaying = false;
+    this.favorites = {
+      songs: new Set(),
+      artists: new Set(),
+      albums: new Set()
+    };
+  }
+}`
+            },
+            utils: {
+                type: 'object',
+                description: 'Utility functions for common operations throughout the application',
+                methods: {
+                    formatTime: {
+                        type: 'function',
+                        description: 'Formats seconds into MM:SS format for display',
+                        parameters: ['seconds: number'],
+                        returns: 'string',
+                        example: 'utils.formatTime(125) // "2:05"'
+                    },
+                    normalizeForUrl: {
+                        type: 'function',
+                        description: 'Normalizes text for URL usage by removing special characters',
+                        parameters: ['text: string'],
+                        returns: 'string',
+                        example: 'utils.normalizeForUrl("The Beatles!") // "thebeatles"'
+                    },
+                    getAlbumImageUrl: {
+                        type: 'function',
+                        description: 'Generates album cover image URL from album name',
+                        parameters: ['albumName: string'],
+                        returns: 'string',
+                        example: 'utils.getAlbumImageUrl("Abbey Road") // URL string'
+                    }
+                }
+            },
+            player: {
+                type: 'object',
+                description: 'Core music player functionality with audio management',
+                methods: {
+                    playSong: {
+                        type: 'async function',
+                        description: 'Plays a song with full loading, UI updates, and error handling',
+                        parameters: ['songData: Object'],
+                        returns: 'Promise<void>',
+                        example: `await player.playSong({
+  id: "song-123",
+  title: "Song Title",
+  artist: "Artist Name",
+  album: "Album Name"
+});`
+                    },
+                    toggle: {
+                        type: 'function',
+                        description: 'Toggles between play and pause states',
+                        returns: 'void',
+                        example: 'player.toggle(); // Plays if paused, pauses if playing'
+                    },
+                    initialize: {
+                        type: 'function',
+                        description: 'Initializes the audio player and binds events',
+                        returns: 'void'
+                    }
+                }
+            },
+            controls: {
+                type: 'object',
+                description: 'Player control functions for playback management',
+                methods: {
+                    play: {
+                        type: 'function',
+                        description: 'Starts audio playback',
+                        returns: 'void',
+                        example: 'controls.play();'
+                    },
+                    pause: {
+                        type: 'function',
+                        description: 'Pauses audio playback',
+                        returns: 'void',
+                        example: 'controls.pause();'
+                    },
+                    next: {
+                        type: 'function',
+                        description: 'Skips to next track in queue or album',
+                        returns: 'void',
+                        example: 'controls.next();'
+                    },
+                    previous: {
+                        type: 'function',
+                        description: 'Goes to previous track or restarts current',
+                        returns: 'void',
+                        example: 'controls.previous();'
+                    }
+                },
+                properties: {
+                    shuffle: {
+                        type: 'object',
+                        description: 'Shuffle control methods',
+                        methods: {
+                            toggle: {
+                                type: 'function',
+                                description: 'Toggles shuffle mode on/off',
+                                returns: 'void'
+                            }
+                        }
+                    }
+                }
+            },
+            notifications: {
+                type: 'object',
+                description: 'Advanced toast notification system with animations',
+                methods: {
+                    show: {
+                        type: 'function',
+                        description: 'Shows a toast notification with type, duration, and undo support',
+                        parameters: ['message: string', 'type: string', 'undoCallback: function', 'options: Object'],
+                        returns: 'HTMLElement',
+                        example: `notifications.show("Success!", "success");
+notifications.show("Deleted", "warning", () => undo());`
+                    },
+                    initialize: {
+                        type: 'function',
+                        description: 'Initializes the notification system',
+                        returns: 'void'
+                    }
+                }
+            },
+            playlists: {
+                type: 'object',
+                description: 'Comprehensive playlist management system',
+                methods: {
+                    create: {
+                        type: 'async function',
+                        description: 'Shows prompt to create new playlist',
+                        returns: 'Promise<Object|null>',
+                        example: 'const playlist = await playlists.create();'
+                    },
+                    add: {
+                        type: 'function',
+                        description: 'Creates a new playlist with the given name',
+                        parameters: ['name: string'],
+                        returns: 'Object|null'
+                    },
+                    addSong: {
+                        type: 'function',
+                        description: 'Adds a song to an existing playlist',
+                        parameters: ['playlistId: string', 'song: Object'],
+                        returns: 'boolean'
+                    }
+                }
+            },
+            theme: {
+                type: 'object',
+                description: 'Theme management system for switching between dark, dim, and light themes',
+                methods: {
+                    get: {
+                        type: 'function',
+                        description: 'Gets the current active theme',
+                        returns: 'string',
+                        example: 'const theme = theme.get(); // "dark", "dim", or "light"'
+                    },
+                    set: {
+                        type: 'function',
+                        description: 'Sets the application theme and saves preference',
+                        parameters: ['theme: string'],
+                        returns: 'void'
+                    },
+                    toggle: {
+                        type: 'function',
+                        description: 'Cycles through available themes',
+                        returns: 'void'
+                    }
+                }
+            }
+        };
+    }
+
+    buildSearchIndex() {
+        this.searchIndex = [];
+        
+        const indexItem = (path, item, parentPath = '') => {
+            const fullPath = parentPath ? `${parentPath}.${path}` : path;
+            
+            this.searchIndex.push({
+                path: fullPath,
+                name: path,
+                type: item.type,
+                description: item.description || '',
+                keywords: [path, item.type, item.description || ''].join(' ').toLowerCase()
+            });
+
+            if (item.methods) {
+                Object.entries(item.methods).forEach(([methodName, method]) => {
+                    indexItem(methodName, method, fullPath);
+                });
+            }
+
+            if (item.properties) {
+                Object.entries(item.properties).forEach(([propName, prop]) => {
+                    indexItem(propName, prop, fullPath);
+                });
+            }
+        };
+
+        Object.entries(this.codeStructure).forEach(([key, value]) => {
+            indexItem(key, value);
+        });
+    }
+
+    renderSidebar() {
+        const nav = document.getElementById('sidebar-nav');
+        if (!nav) return;
+        
+        nav.innerHTML = '';
+
+        Object.entries(this.codeStructure).forEach(([key, value]) => {
+            const item = this.createSidebarItem(key, value, 0);
+            nav.appendChild(item);
+        });
+    }
+
+    createSidebarItem(name, item, depth = 0) {
+        const div = document.createElement('div');
+        div.className = 'slide-in';
+        
+        const button = document.createElement('button');
+        button.className = `sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${depth > 0 ? 'ml-4 border-l border-slate-600 pl-4' : ''}`;
+        
+        const leftContent = document.createElement('div');
+        leftContent.className = 'flex items-center space-x-2';
+        
+        const icon = document.createElement('i');
+        icon.className = `fas ${this.getTypeIcon(item.type)} text-xs`;
+        leftContent.appendChild(icon);
+        
+        const badge = document.createElement('span');
+        badge.className = `method-badge method-${item.type}`;
+        badge.textContent = item.type;
+        leftContent.appendChild(badge);
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        nameSpan.className = 'font-medium';
+        leftContent.appendChild(nameSpan);
+        
+        button.appendChild(leftContent);
+        
+        button.addEventListener('click', () => {
+            this.showItemDetails(name, item);
+            this.setActiveSidebarItem(button);
+        });
+        
+        div.appendChild(button);
+        return div;
+    }
+
+    getTypeIcon(type) {
+        const icons = {
+            'class': 'fa-cube',
+            'object': 'fa-box',
+            'function': 'fa-bolt',
+            'async function': 'fa-sync',
+            'property': 'fa-tag',
+            'boolean': 'fa-toggle-on',
+            'string': 'fa-quote-right',
+            'number': 'fa-hashtag',
+            'array': 'fa-list',
+            'HTMLElement': 'fa-code'
+        };
+        return icons[type] || 'fa-circle';
+    }
+
+    showItemDetails(name, item) {
+        document.getElementById('welcome-section').classList.add('hidden');
+        const contentArea = document.getElementById('content-area');
+        contentArea.classList.remove('hidden');
+        contentArea.innerHTML = '';
+
+        const container = document.createElement('div');
+        container.className = 'fade-in';
+        
+        // Header
+        const header = document.createElement('div');
+        header.className = 'mb-8';
+        header.innerHTML = `
+            <div class="flex items-center space-x-4 mb-4">
+                <h1 class="text-3xl font-bold">${name}</h1>
+                <span class="method-badge method-${item.type}">
+                    <i class="fas ${this.getTypeIcon(item.type)}"></i>
+                    ${item.type}
+                </span>
+            </div>
+            <p class="text-slate-400 text-lg">${item.description || 'No description available'}</p>
+        `;
+        container.appendChild(header);
+
+        // Code example
+        if (item.example) {
+            const codeSection = this.createCodeSection(name, item);
+            container.appendChild(codeSection);
+        }
+
+        // Methods and properties
+        if (item.methods || item.properties) {
+            const detailsSection = this.createDetailsSection(item);
+            container.appendChild(detailsSection);
+        }
+
+        contentArea.appendChild(container);
+        this.setupSyntaxHighlighting();
+    }
+
+    createCodeSection(name, item) {
+        const section = document.createElement('div');
+        section.className = 'mb-8';
+        
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">Code Example</h2>
+                <button class="copy-btn p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors" data-code="${encodeURIComponent(item.example)}">
+                    <i class="fas fa-copy text-sm"></i>
+                </button>
+            </div>
+            <div class="code-block">
+                <pre class="language-javascript"><code>${this.escapeHtml(item.example)}</code></pre>
+            </div>
+        `;
+
+        // Bind copy button
+        const copyBtn = section.querySelector('.copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+                this.copyToClipboard(decodeURIComponent(e.target.closest('button').dataset.code));
+            });
+        }
+
+        return section;
+    }
+
+    createDetailsSection(item) {
+        const section = document.createElement('div');
+        section.className = 'mb-8';
+        
+        let content = '<h2 class="text-xl font-semibold mb-4">Details</h2>';
+        
+        if (item.methods) {
+            content += `
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3">Methods</h3>
+                    <div class="space-y-3">
+                        ${Object.entries(item.methods).map(([method, details]) => `
+                            <div class="bg-slate-800/50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <code class="text-green-400 font-medium">${method}()</code>
+                                    <span class="method-badge method-function">${details.type || 'function'}</span>
+                                </div>
+                                <p class="text-slate-400 text-sm">${details.description || 'No description'}</p>
+                                ${details.parameters ? `
+                                    <div class="mt-2 text-xs text-slate-500">
+                                        Parameters: ${details.parameters.join(', ')}
+                                    </div>
+                                ` : ''}
+                                ${details.returns ? `
+                                    <div class="mt-1 text-xs text-slate-500">
+                                        Returns: ${details.returns}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (item.properties) {
+            content += `
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3">Properties</h3>
+                    <div class="space-y-3">
+                        ${Object.entries(item.properties).map(([prop, details]) => `
+                            <div class="bg-slate-800/50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <code class="text-blue-400 font-medium">${prop}</code>
+                                    <span class="method-badge method-property">${details.type || 'property'}</span>
+                                </div>
+                                <p class="text-slate-400 text-sm">${details.description || 'No description'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        section.innerHTML = content;
+        return section;
+    }
+
+    setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('global-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.performSearch(e.target.value);
+            });
+        }
+
+        // Filter functionality
+        const filterSelect = document.getElementById('filter-type');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                this.filterSidebar(e.target.value);
+            });
+        }
+
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                this.toggleTheme();
+            });
+        }
+
+        // Menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuDropdown = document.getElementById('menu-dropdown');
+        if (menuToggle && menuDropdown) {
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', () => {
+                menuDropdown.classList.add('hidden');
+            });
+        }
+
+        // Scroll to top
+        const scrollBtn = document.getElementById('scroll-to-top');
+        if (scrollBtn) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollBtn.classList.remove('hidden');
+                } else {
+                    scrollBtn.classList.add('hidden');
+                }
+            });
+
+            scrollBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // Welcome section cards
+        document.querySelectorAll('[data-section]').forEach(card => {
+            card.addEventListener('click', () => {
+                this.showSection(card.dataset.section);
+            });
+        });
+    }
+
+    performSearch(query) {
+        if (query.length < 2) return;
+
+        const results = this.searchIndex.filter(item => 
+            item.keywords.includes(query.toLowerCase())
+        ).slice(0, 10);
+
+        console.log('Search results:', results);
+        // You can implement search results display here
+    }
+
+    filterSidebar(type) {
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        
+        sidebarItems.forEach(item => {
+            const badge = item.querySelector('.method-badge');
+            if (badge) {
+                const itemType = badge.textContent.trim();
+                if (type === 'all' || itemType === type) {
+                    item.closest('div').style.display = 'block';
+                } else {
+                    item.closest('div').style.display = 'none';
+                }
+            }
+        });
+    }
+
+    setActiveSidebarItem(button) {
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        button.classList.add('active');
+    }
+
+    copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Code copied to clipboard!', 'success');
+            }).catch(() => {
+                this.showToast('Failed to copy code', 'error');
+            });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                this.showToast('Code copied to clipboard!', 'success');
+            } catch (err) {
+                this.showToast('Failed to copy code', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        
+        const bgColor = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        }[type] || 'bg-blue-500';
+        
+        toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+        toast.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full');
+        }, 100);
+        
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+            setTimeout(() => {
+                if (container.contains(toast)) {
+                    container.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    setupSyntaxHighlighting() {
+        if (window.Prism) {
+            try {
+                Prism.highlightAll();
+            } catch (error) {
+                console.warn('Prism highlighting failed:', error);
+            }
+        }
+    }
+
+    initializeTooltips() {
+        // Basic tooltip implementation since tippy.js might not load
+        document.querySelectorAll('[title]').forEach(element => {
+            element.addEventListener('mouseenter', (e) => {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'fixed bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-lg z-50 pointer-events-none';
+                tooltip.textContent = e.target.title;
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = (e.clientY - 30) + 'px';
+                document.body.appendChild(tooltip);
+                
+                e.target.addEventListener('mouseleave', () => {
+                    if (document.body.contains(tooltip)) {
+                        document.body.removeChild(tooltip);
+                    }
+                }, { once: true });
+            });
+        });
+    }
+
+    setupTheme() {
+        const savedTheme = localStorage.getItem('docs-theme') || 'dark';
+        document.documentElement.className = savedTheme;
+        
+        const themeIcon = document.querySelector('#theme-toggle i');
+        if (themeIcon) {
+            themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+    }
+
+    setupAccessibility() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('global-search');
+                if (searchInput) searchInput.focus();
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            document.body.classList.remove('keyboard-navigation');
+        });
+    }
+
+    toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.classList.contains('dark');
+        
+        if (isDark) {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            localStorage.setItem('docs-theme', 'light');
+        } else {
+            html.classList.remove('light');
+            html.classList.add('dark');
+            localStorage.setItem('docs-theme', 'dark');
+        }
+        
+        const icon = document.querySelector('#theme-toggle i');
+        if (icon) {
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        this.showToast(`Switched to ${isDark ? 'light' : 'dark'} theme`, 'info');
+    }
+
+    updateStats() {
+        const stats = {
+            objects: 0,
+            functions: 0,
+            properties: 0,
+            lines: 2847
+        };
+
+        this.searchIndex.forEach(item => {
+            if (item.type === 'object' || item.type === 'class') {
+                stats.objects++;
+            } else if (item.type.includes('function')) {
+                stats.functions++;
+            } else {
+                stats.properties++;
+            }
+        });
+
+        this.animateCounter('stats-objects', stats.objects);
+        this.animateCounter('stats-functions', stats.functions);
+        this.animateCounter('stats-properties', stats.properties);
+        this.animateCounter('stats-lines', stats.lines);
+    }
+
+    animateCounter(elementId, target) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        let current = 0;
+        const increment = target / 30;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, 50);
+    }
+
+    hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 500);
+        }
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    showSection(sectionName) {
+        switch(sectionName) {
+            case 'getting-started':
+                this.showGettingStarted();
+                break;
+            case 'api-reference':
+                this.showApiReference();
+                break;
+            case 'examples':
+                this.showExamples();
+                break;
+        }
+    }
+
+    showGettingStarted() {
+        const contentArea = document.getElementById('content-area');
+        document.getElementById('welcome-section').classList.add('hidden');
+        contentArea.classList.remove('hidden');
+        
+        contentArea.innerHTML = `
+            <div class="fade-in">
+                <h1 class="text-3xl font-bold mb-6">Getting Started with MyTunes</h1>
+                <div class="prose prose-invert max-w-none">
+                    <p class="text-lg text-slate-400 mb-6">MyTunes is a comprehensive music player application built with modern JavaScript. This guide will help you understand the core concepts and get you started with using the codebase.</p>
+                    
+                    <h2 class="text-2xl font-semibold mb-4">Quick Start</h2>
+                    <div class="code-block mb-6">
+                        <pre class="language-javascript"><code>// Initialize the MyTunes application
+app.initialize();
+
+// The app state is now available globally
+console.log(appState.currentSong);
+console.log(appState.isPlaying);</code></pre>
+                    </div>
+                    
+                    <h2 class="text-2xl font-semibold mb-4">Basic Usage</h2>
+                    <div class="code-block mb-6">
+                        <pre class="language-javascript"><code>// Play a song
+await player.playSong({
+    id: "song-123",
+    title: "My Favorite Song",
+    artist: "Great Artist",
+    album: "Amazing Album"
+});
+
+// Control playback
+player.toggle(); // Play/pause
+controls.next(); // Next song
+controls.previous(); // Previous song</code></pre>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.setupSyntaxHighlighting();
+    }
+
+    showApiReference() {
+        const firstObject = Object.keys(this.codeStructure)[0];
+        this.showItemDetails(firstObject, this.codeStructure[firstObject]);
+    }
+
+    showExamples() {
+        const contentArea = document.getElementById('content-area');
+        document.getElementById('welcome-section').classList.add('hidden');
+        contentArea.classList.remove('hidden');
+        
+        contentArea.innerHTML = `
+            <div class="fade-in">
+                <h1 class="text-3xl font-bold mb-6">Code Examples</h1>
+                <div class="space-y-8">
+                    <div class="bg-slate-800/50 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Playing Music</h3>
+                        <div class="code-block">
+                            <pre class="language-javascript"><code>// Play a song with full metadata
+const songData = {
+    id: "song-123",
+    title: "My Favorite Song",
+    artist: "Great Artist",
+    album: "Amazing Album"
+};
+
+await player.playSong(songData);</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Managing Favorites</h3>
+                        <div class="code-block">
+                            <pre class="language-javascript"><code>// Add to favorites
+appState.favorites.add("songs", "song-123");
+
+// Check if favorited
+const isFavorite = appState.favorites.has("songs", "song-123");
+
+// Toggle favorite status
+appState.favorites.toggle("songs", "song-123");</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.setupSyntaxHighlighting();
+    }
+}
+
+// Initialize the documentation app
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        new DocsApp();
+    } catch (error) {
+        console.error('Failed to create DocsApp:', error);
+        
+        // Show fallback error message
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.innerHTML = `
+                <div class="text-center">
+                    <div class="text-red-500 text-4xl mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2 class="text-xl font-bold mb-4">Failed to Load Documentation</h2>
+                    <p class="text-slate-400 mb-6">There was an error initializing the documentation. Please check the console for details.</p>
+                    <button onclick="location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-redo mr-2"></i>Reload Page
+                    </button>
+                </div>
+            `;
+        }
+    }
+});
+
+
+// Initialize Preline UI components
+window.addEventListener('load', () => {
+    if (window.HSStaticMethods) {
+        window.HSStaticMethods.autoInit();
+    }
+});                                            
+
+
+
+
+
+// Advanced Features and Enhancements for Documentation
+
+class AdvancedFeatures {
+    constructor(docsApp) {
+        this.docsApp = docsApp;
+        this.init();
+    }
+
+    init() {
+        this.setupAdvancedSearch();
+        this.setupCodePlayground();
+        this.setupExportFeatures();
+        this.setupCollaborativeFeatures();
+        this.setupAnalytics();
+        this.setupKeyboardShortcuts();
+        this.setupContextMenu();
+    }
+
+    setupAdvancedSearch() {
+        // Enhanced search with fuzzy matching and categories
+        this.searchEngine = new FuzzySearch();
+        
+        const searchInput = document.getElementById('global-search');
+        const searchResults = document.createElement('div');
+        searchResults.className = 'absolute top-full left-0 right-0 bg-slate-800 border border-slate-600 rounded-lg mt-1 hidden z-50 max-h-96 overflow-y-auto';
+        searchInput.parentElement.appendChild(searchResults);
+
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.performAdvancedSearch(e.target.value, searchResults);
+            }, 300);
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.parentElement.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+    }
+
+    performAdvancedSearch(query, resultsContainer) {
+        if (query.length < 2) {
+            resultsContainer.classList.add('hidden');
+            return;
+        }
+
+        const results = this.searchEngine.search(query, this.docsApp.searchIndex);
+        
+        if (results.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="p-4 text-center text-slate-400">
+                    <i class="fas fa-search text-2xl mb-2"></i>
+                    <p>No results found</p>
+                    <p class="text-xs">Try different keywords or check spelling</p>
+                </div>
+            `;
+        } else {
+            resultsContainer.innerHTML = `
+                <div class="p-2">
+                    <div class="text-xs text-slate-400 mb-2">${results.length} result${results.length !== 1 ? 's' : ''}</div>
+                    ${results.map((result, index) => `
+                        <div class="search-result-item p-3 hover:bg-slate-700 rounded cursor-pointer" data-path="${result.path}" data-index="${index}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-medium">${this.highlightText(result.name, query)}</span>
+                                <span class="method-badge method-${result.type} text-xs">${result.type}</span>
+                            </div>
+                            <div class="text-xs text-slate-400">${result.path}</div>
+                            <div class="text-xs text-slate-500 mt-1">${this.highlightText(result.description, query)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Bind click events
+            resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    this.docsApp.navigateToItem(item.dataset.path);
+                    resultsContainer.classList.add('hidden');
+                    document.getElementById('global-search').value = '';
+                });
+            });
+        }
+
+        resultsContainer.classList.remove('hidden');
+    }
+
+    highlightText(text, query) {
+        if (!text || !query) return text;
+        const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+
+    escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    setupCodePlayground() {
+        // Interactive code playground
+        this.createPlaygroundModal();
+        this.addPlaygroundButtons();
+    }
+
+    createPlaygroundModal() {
+        const modal = document.createElement('div');
+        modal.id = 'playground-modal';
+        modal.className = 'hs-overlay hidden w-full h-full fixed top-0 start-0 z-[90] overflow-hidden';
+        
+        modal.innerHTML = `
+            <div class="hs-overlay-open:opacity-100 hs-overlay-open:duration-500 opacity-0 transition-all w-full h-full">
+                <div class="bg-slate-900 w-full h-full flex flex-col">
+                    <div class="flex justify-between items-center p-4 border-b border-slate-700">
+                        <h3 class="font-bold text-slate-200">Code Playground</h3>
+                        <div class="flex items-center space-x-2">
+                            <button id="run-code" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-play mr-2"></i>Run
+                            </button>
+                            <button id="reset-playground" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-undo mr-2"></i>Reset
+                            </button>
+                            <button type="button" class="hs-overlay-toggle text-slate-400 hover:text-slate-200" data-hs-overlay="#playground-modal">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex">
+                        <div class="w-1/2 border-r border-slate-700">
+                            <div class="p-4 border-b border-slate-700 bg-slate-800">
+                                <h4 class="font-semibold">Code Editor</h4>
+                            </div>
+                            <div class="h-full">
+                                <textarea id="playground-editor" class="w-full h-full bg-slate-800 text-slate-100 p-4 font-mono text-sm resize-none border-0 outline-none" placeholder="// Write your code here..."></textarea>
+                            </div>
+                        </div>
+                        <div class="w-1/2">
+                            <div class="p-4 border-b border-slate-700 bg-slate-800">
+                                <h4 class="font-semibold">Output</h4>
+                            </div>
+                            <div id="playground-output" class="h-full bg-slate-900 p-4 font-mono text-sm overflow-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        this.bindPlaygroundEvents();
+    }
+
+    bindPlaygroundEvents() {
+        document.getElementById('run-code').addEventListener('click', () => {
+            this.executePlaygroundCode();
+        });
+
+        document.getElementById('reset-playground').addEventListener('click', () => {
+            document.getElementById('playground-editor').value = '';
+            document.getElementById('playground-output').innerHTML = '';
+        });
+    }
+
+    executePlaygroundCode() {
+        const code = document.getElementById('playground-editor').value;
+        const output = document.getElementById('playground-output');
+        
+        // Clear previous output
+        output.innerHTML = '';
+        
+        // Create a safe execution environment
+        const originalConsole = console.log;
+        const logs = [];
+        
+        console.log = (...args) => {
+            logs.push(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' '));
+        };
+        
+        try {
+            // Execute the code
+            const result = new Function(`
+                ${this.getPlaygroundContext()}
+                ${code}
+            `)();
+            
+            if (result !== undefined) {
+                logs.push(`Return value: ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}`);
+            }
+            
+            output.innerHTML = logs.map(log => `<div class="mb-2 text-green-400">${this.escapeHtml(log)}</div>`).join('');
+            
+        } catch (error) {
+            output.innerHTML = `<div class="text-red-400">Error: ${this.escapeHtml(error.message)}</div>`;
+        } finally {
+            console.log = originalConsole;
+        }
+    }
+
+    getPlaygroundContext() {
+        return `
+            // Mock MyTunes API for playground
+            const mockSong = {
+                id: "demo-song",
+                title: "Demo Song",
+                artist: "Demo Artist",
+                album: "Demo Album",
+                duration: "3:45"
+            };
+            
+            const utils = {
+                formatTime: (seconds) => {
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = Math.floor(seconds % 60);
+                    return \`\${minutes}:\${secs.toString().padStart(2, "0")}\`;
+                },
+                normalizeForUrl: (text) => {
+                    return text.toLowerCase().replace(/[^\\w\\s]/g, "").replace(/\\s+/g, "");
+                }
+            };
+            
+            const notifications = {
+                show: (message, type = 'info') => {
+                    console.log(\`Notification (\${type}): \${message}\`);
+                }
+            };
+            
+            const player = {
+                playSong: (songData) => {
+                    console.log('Playing:', songData.title, 'by', songData.artist);
+                    return Promise.resolve();
+                }
+            };
+        `;
+    }
+
+    addPlaygroundButtons() {
+        // Add playground buttons to code blocks
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.code-block')) {
+                const codeBlock = e.target.closest('.code-block');
+                if (!codeBlock.querySelector('.playground-btn')) {
+                    const btn = document.createElement('button');
+                    btn.className = 'playground-btn absolute top-2 right-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors';
+                    btn.innerHTML = '<i class="fas fa-play mr-1"></i>Try it';
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const code = codeBlock.querySelector('code').textContent;
+                        this.openPlaygroundWithCode(code);
+                    });
+                    codeBlock.style.position = 'relative';
+                    codeBlock.appendChild(btn);
+                }
+            }
+        });
+    }
+
+    openPlaygroundWithCode(code) {
+        document.getElementById('playground-editor').value = code;
+        HSOverlay.open(document.getElementById('playground-modal'));
+    }
+
+    setupExportFeatures() {
+        this.addExportMenu();
+    }
+
+    addExportMenu() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const menu = menuToggle.nextElementSibling;
+        
+        menu.innerHTML += `
+            <div class="border-t border-slate-600 my-2"></div>
+            <a href="#" id="export-pdf" class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-slate-300 hover:bg-slate-700">
+                <i class="fas fa-file-pdf"></i>
+                Export as PDF
+            </a>
+            <a href="#" id="export-html" class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-slate-300 hover:bg-slate-700">
+                <i class="fas fa-code"></i>
+                Export as HTML
+            </a>
+            <a href="#" id="generate-summary" class="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-slate-300 hover:bg-slate-700">
+                <i class="fas fa-file-alt"></i>
+                Generate Summary
+            </a>
+        `;
+
+        document.getElementById('export-pdf').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.exportAsPDF();
+        });
+
+        document.getElementById('export-html').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.exportAsHTML();
+        });
+
+        document.getElementById('generate-summary').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.generateSummary();
+        });
+    }
+
+    exportAsPDF() {
+        // Create printable version
+        const printWindow = window.open('', '_blank');
+        const content = this.generatePrintableContent();
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>MyTunes Documentation</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                    h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                    h2 { color: #555; margin-top: 30px; }
+                    .code-block { background: #f5f5f5; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                    .method-badge { background: #e0e0e0; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+                    @media print { body { margin: 20px; } }
+                </style>
+            </head>
+            <body>${content}</body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 500);
+    }
+
+    exportAsHTML() {
+        const content = this.generateExportableHTML();
+        const blob = new Blob([content], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mytunes-documentation.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.docsApp.showToast('Documentation exported as HTML', 'success');
+    }
+
+    generateSummary() {
+        const summary = this.createDocumentationSummary();
+        this.showSummaryModal(summary);
+    }
+
+    createDocumentationSummary() {
+        const stats = {
+            totalObjects: 0,
+            totalFunctions: 0,
+            totalProperties: 0,
+            complexity: 'High',
+            mainFeatures: []
+        };
+
+        this.docsApp.searchIndex.forEach(item => {
+            if (item.type === 'object' || item.type === 'class') stats.totalObjects++;
+            else if (item.type.includes('function')) stats.totalFunctions++;
+            else stats.totalProperties++;
+        });
+
+        stats.mainFeatures = Object.keys(this.docsApp.codeStructure).slice(0, 5);
+
+        return {
+            overview: 'MyTunes is a comprehensive music player application with advanced features including playlist management, theme switching, and real-time notifications.',
+            stats,
+            recommendations: [
+                'Start with the player object for basic functionality',
+                'Use utils for common operations',
+                'Implement notifications for user feedback',
+                'Consider the storage system for data persistence'
+            ]
+        };
+    }
+
+    showSummaryModal(summary) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-slate-800 rounded-xl p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Documentation Summary</h3>
+                    <button class="text-slate-400 hover:text-slate-200 close-summary">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">Overview</h4>
+                        <p class="text-slate-400">${summary.overview}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Statistics</h4>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-slate-700 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-blue-400">${summary.stats.totalObjects}</div>
+                                <div class="text-xs text-slate-400">Objects</div>
+                            </div>
+                            <div class="bg-slate-700 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-green-400">${summary.stats.totalFunctions}</div>
+                                <div class="text-xs text-slate-400">Functions</div>
+                            </div>
+                            <div class="bg-slate-700 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-purple-400">${summary.stats.totalProperties}</div>
+                                <div class="text-xs text-slate-400">Properties</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Key Features</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${summary.stats.mainFeatures.map(feature => 
+                                `<span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">${feature}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Recommendations</h4>
+                        <ul class="space-y-1 text-slate-400">
+                            ${summary.recommendations.map(rec => `<li>• ${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.querySelector('.close-summary').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    setupKeyboardShortcuts() {
+        const shortcuts = {
+            'ctrl+k': () => document.getElementById('global-search').focus(),
+            'ctrl+p': () => this.openPlaygroundWithCode('// Start coding here...'),
+            'ctrl+e': () => this.exportAsHTML(),
+            'ctrl+/': () => this.showShortcutsHelp(),
+            'escape': () => this.closeAllModals()
+        };
+
+        document.addEventListener('keydown', (e) => {
+            const key = `${e.ctrlKey ? 'ctrl+' : ''}${e.key.toLowerCase()}`;
+            if (shortcuts[key]) {
+                e.preventDefault();
+                shortcuts[key]();
+            }
+        });
+    }
+
+    showShortcutsHelp() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4">
+                <h3 class="text-xl font-bold mb-4">Keyboard Shortcuts</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span>Search</span>
+                        <kbd class="bg-slate-700 px-2 py-1 rounded text-sm">Ctrl + K</kbd>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Playground</span>
+                        <kbd class="bg-slate-700 px-2 py-1 rounded text-sm">Ctrl + P</kbd>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Export</span>
+                        <kbd class="bg-slate-700 px-2 py-1 rounded text-sm">Ctrl + E</kbd>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Help</span>
+                        <kbd class="bg-slate-700 px-2 py-1 rounded text-sm">Ctrl + /</kbd>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Close</span>
+                        <kbd class="bg-slate-700 px-2 py-1 rounded text-sm">Escape</kbd>
+                    </div>
+                </div>
+                <button class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors close-shortcuts">
+                    Got it!
+                </button>
+            </div>
+        `;
+
+        modal.querySelector('.close-shortcuts').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    closeAllModals() {
+        document.querySelectorAll('.hs-overlay').forEach(modal => {
+            if (!modal.classList.contains('hidden')) {
+                HSOverlay.close(modal);
+            }
+        });
+    }
+
+    setupContextMenu() {
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('.code-block')) {
+                e.preventDefault();
+                this.showCodeContextMenu(e, e.target.closest('.code-block'));
+            }
+        });
+    }
+
+    showCodeContextMenu(event, codeBlock) {
+        // Remove existing context menu
+        const existingMenu = document.querySelector('.context-menu');
+        if (existingMenu) existingMenu.remove();
+
+        const menu = document.createElement('div');
+        menu.className = 'context-menu fixed bg-slate-800 border border-slate-600 rounded-lg shadow-lg py-2 z-50';
+        menu.style.left = `${event.pageX}px`;
+        menu.style.top = `${event.pageY}px`;
+
+        menu.innerHTML = `
+            <button class="w-full text-left px-4 py-2 hover:bg-slate-700 text-sm" data-action="copy">
+                <i class="fas fa-copy mr-2"></i>Copy Code
+            </button>
+            <button class="w-full text-left px-4 py-2 hover:bg-slate-700 text-sm" data-action="playground">
+                <i class="fas fa-play mr-2"></i>Try in Playground
+            </button>
+            <button class="w-full text-left px-4 py-2 hover:bg-slate-700 text-sm" data-action="explain">
+                <i class="fas fa-question-circle mr-2"></i>Explain Code
+            </button>
+        `;
+
+        menu.addEventListener('click', (e) => {
+            const action = e.target.closest('button')?.dataset.action;
+            const code = codeBlock.querySelector('code').textContent;
+            
+            switch (action) {
+                case 'copy':
+                    navigator.clipboard.writeText(code);
+                    this.docsApp.showToast('Code copied!', 'success');
+                    break;
+                case 'playground':
+                    this.openPlaygroundWithCode(code);
+                    break;
+                case 'explain':
+                    this.explainCode(code);
+                    break;
+            }
+            
+            menu.remove();
+        });
+
+        document.addEventListener('click', () => menu.remove(), { once: true });
+        document.body.appendChild(menu);
+    }
+
+    explainCode(code) {
+        // Simple code explanation (could be enhanced with AI)
+        const explanations = {
+            'async': 'This is an asynchronous function that can use await',
+            'const': 'This declares a constant variable',
+            'let': 'This declares a variable with block scope',
+            'function': 'This defines a function',
+            'class': 'This defines a class',
+            'addEventListener': 'This adds an event listener to an element',
+            'querySelector': 'This selects an element from the DOM'
+        };
+
+        let explanation = 'Code Analysis:\n\n';
+        Object.entries(explanations).forEach(([keyword, desc]) => {
+            if (code.includes(keyword)) {
+                explanation += `• ${keyword}: ${desc}\n`;
+            }
+        });
+
+        alert(explanation || 'No specific explanations available for this code.');
+    }
+
+    setupAnalytics() {
+        this.analytics = {
+            pageViews: {},
+            searchQueries: [],
+            codeExecutions: 0
+        };
+
+        // Track page views
+        this.trackEvent('page_view', { page: 'documentation_home' });
+    }
+
+    trackEvent(eventName, data) {
+        console.log(`Analytics: ${eventName}`, data);
+        // In a real implementation, this would send to analytics service
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    generatePrintableContent() {
+        // Generate content suitable for printing
+        let content = '<h1>MyTunes Documentation</h1>';
+        
+        Object.entries(this.docsApp.codeStructure).forEach(([name, item]) => {
+            content += `
+                <h2>${name}</h2>
+                <p><strong>Type:</strong> ${item.type}</p>
+                <p>${item.description || 'No description available'}</p>
+            `;
+            
+            if (item.methods) {
+                content += '<h3>Methods</h3>';
+                Object.entries(item.methods).forEach(([methodName, method]) => {
+                    content += `<p><strong>${methodName}:</strong> ${method.description || 'No description'}</p>`;
+                });
+            }
+        });
+        
+        return content;
+    }
+
+    generateExportableHTML() {
+        return `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>MyTunes Documentation Export</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; margin: 40px; }
+                    h1, h2, h3 { color: #2d3748; }
+                    .code-block { background: #f7fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin: 15px 0; overflow-x: auto; }
+                    .method-badge { background: #edf2f7; color: #4a5568; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-left: 8px; }
+                    pre { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; }
+                    code { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; }
+                </style>
+            </head>
+            <body>
+                ${this.generatePrintableContent()}
+                <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px;">
+                    Generated on ${new Date().toLocaleDateString()}
+                </footer>
+            </body>
+            </html>
+        `;
+    }
+}
+
+// Fuzzy Search Implementation
+class FuzzySearch {
+    search(query, items) {
+        if (!query || !items) return [];
+        
+        const results = items.map(item => ({
+            ...item,
+            score: this.calculateScore(query.toLowerCase(), item.keywords)
+        })).filter(item => item.score > 0);
+        
+        return results.sort((a, b) => b.score - a.score);
+    }
+    
+    calculateScore(query, text) {
+        if (!text.includes(query)) {
+            // Check for partial matches
+            const queryChars = query.split('');
+            let matchCount = 0;
+            let lastIndex = -1;
+            
+            for (const char of queryChars) {
+                const index = text.indexOf(char, lastIndex + 1);
+                if (index > lastIndex) {
+                    matchCount++;
+                    lastIndex = index;
+                }
+            }
+            
+            return matchCount / query.length * 0.5; // Partial match score
+        }
+        
+        // Exact match bonus
+        if (text.startsWith(query)) return 1.0;
+        
+        // Contains query
+        return 0.8;
+    }
+}
+
+// Initialize advanced features when DocsApp is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for DocsApp to be initialized
+    setTimeout(() => {
+        if (window.docsAppInstance) {
+            new AdvancedFeatures(window.docsAppInstance);
+        }
+    }, 1000);
+});
