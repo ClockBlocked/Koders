@@ -120,21 +120,99 @@ html {font-size:12px !important;}
     animation: glow 2s ease-in-out infinite;
 }
 
-/* Code syntax enhancements */
+/* Code syntax enhancements - ChatGPT Canvas style */
+.source-viewer {
+    background: #1a1b26;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.source-header {
+    background: #24283b;
+    padding: 12px 20px;
+    border-bottom: 1px solid #414868;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.source-language {
+    color: #9aa5ce;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.source-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.source-control-btn {
+    background: #414868;
+    border: none;
+    color: #9aa5ce;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.source-control-btn:hover {
+    background: #565f89;
+    color: #c0caf5;
+}
+
+.source-content {
+    position: relative;
+    overflow: auto;
+    max-height: 80vh;
+}
+
+.source-line-numbers {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #1a1b26;
+    color: #565f89;
+    padding: 20px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    width: 60px;
+    text-align: right;
+    border-right: 1px solid #414868;
+    user-select: none;
+    z-index: 1;
+}
+
+.source-code {
+    padding: 20px 20px 20px 80px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #c0caf5;
+    white-space: pre;
+    overflow-x: auto;
+    position: relative;
+}
+
+/* ChatGPT Canvas syntax highlighting */
 .token.keyword {
-    color: #c792ea !important;
+    color: #bb9af7 !important;
 }
 
 .token.string {
-    color: #c3e88d !important;
+    color: #9ece6a !important;
 }
 
 .token.function {
-    color: #82aaff !important;
+    color: #7aa2f7 !important;
 }
 
 .token.number {
-    color: #f78c6c !important;
+    color: #ff9e64 !important;
 }
 
 .token.operator {
@@ -142,11 +220,124 @@ html {font-size:12px !important;}
 }
 
 .token.comment {
-    color: #676e95 !important;
+    color: #565f89 !important;
     font-style: italic;
 }
 
 .token.property {
+    color: #73daca !important;
+}
+
+.token.punctuation {
+    color: #9aa5ce !important;
+}
+
+.token.class-name {
+    color: #e0af68 !important;
+}
+
+.token.constant {
+    color: #ff757f !important;
+}
+
+.token.boolean {
+    color: #ff9e64 !important;
+}
+
+.token.regex {
+    color: #b4f9f8 !important;
+}
+
+/* Interactive code indicators */
+.code-indicator {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: #7aa2f7;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.code-indicator:hover {
+    opacity: 1;
+    background: #bb9af7;
+    transform: translateY(-50%) scale(1.2);
+}
+
+.code-indicator::before {
+    content: '?';
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.source-line {
+    position: relative;
+    display: block;
+}
+
+.source-line:hover .code-indicator {
+    opacity: 0.7;
+}
+
+.source-line.has-documentation .code-indicator {
+    opacity: 0.5;
+    background: #9ece6a;
+}
+
+.source-line.has-documentation:hover .code-indicator {
+    opacity: 1;
+}
+
+/* Code explanation tooltip */
+.code-tooltip {
+    position: absolute;
+    background: #24283b;
+    border: 1px solid #414868;
+    border-radius: 8px;
+    padding: 12px;
+    max-width: 300px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #c0caf5;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.code-tooltip-title {
+    font-weight: 600;
+    color: #7aa2f7;
+    margin-bottom: 6px;
+}
+
+.code-tooltip-description {
+    color: #9aa5ce;
+    margin-bottom: 8px;
+}
+
+.code-tooltip-nav {
+    background: #7aa2f7;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.code-tooltip-nav:hover {
+    background: #bb9af7;
+}
     color: #f07178 !important;
 }
 
