@@ -7,7 +7,7 @@ THIS Directory ( "/docs" ) is specifically for my docs:
 
 
 
-JS Source (Branch:  "stable"):
+JS Source (Repository: "Koders", Branch:  "stable"):
 "../siteScripts/global.js"
 
 
