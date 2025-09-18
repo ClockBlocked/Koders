@@ -1,0 +1,3046 @@
+{
+  "constants": [
+    {
+      "name": "ACTION_GRID_ITEMS",
+      "line": 6,
+      "type": "array",
+      "value": "["
+    },
+    {
+      "name": "itemName",
+      "line": 49,
+      "type": "constant",
+      "value": "type"
+    },
+    {
+      "name": "itemName",
+      "line": 57,
+      "type": "constant",
+      "value": "type"
+    },
+    {
+      "name": "key",
+      "line": 74,
+      "type": "constant",
+      "value": "type"
+    },
+    {
+      "name": "icons",
+      "line": 79,
+      "type": "constant",
+      "value": "document.querySelectorAll(`[data-favorite-${type}"
+    },
+    {
+      "name": "heartIcon",
+      "line": 85,
+      "type": "constant",
+      "value": "icon.querySelector(\"svg\");"
+    },
+    {
+      "name": "removed",
+      "line": 115,
+      "type": "constant",
+      "value": "this.queue.items.splice(index, 1)[0];"
+    },
+    {
+      "name": "song",
+      "line": 136,
+      "type": "constant",
+      "value": "this.queue.remove(index);"
+    },
+    {
+      "name": "appState",
+      "line": 145,
+      "type": "constant",
+      "value": "new AppState();"
+    },
+    {
+      "name": "utils",
+      "line": 149,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "minutes",
+      "line": 152,
+      "type": "constant",
+      "value": "Math.floor(seconds / 60);"
+    },
+    {
+      "name": "secs",
+      "line": 153,
+      "type": "constant",
+      "value": "Math.floor(seconds % 60);"
+    },
+    {
+      "name": "normalized",
+      "line": 168,
+      "type": "constant",
+      "value": "utils.normalizeForUrl(albumName);"
+    },
+    {
+      "name": "normalized",
+      "line": 174,
+      "type": "constant",
+      "value": "utils.normalizeForUrl(artistName);"
+    },
+    {
+      "name": "testImage",
+      "line": 195,
+      "type": "constant",
+      "value": "new Image();"
+    },
+    {
+      "name": "fallbackImage",
+      "line": 204,
+      "type": "constant",
+      "value": "new Image();"
+    },
+    {
+      "name": "isArtist",
+      "line": 225,
+      "type": "constant",
+      "value": "type"
+    },
+    {
+      "name": "bgColor",
+      "line": 226,
+      "type": "constant",
+      "value": "isArtist ? \"#4F46E5\" : \"#059669\";"
+    },
+    {
+      "name": "icon",
+      "line": 227,
+      "type": "constant",
+      "value": "isArtist"
+    },
+    {
+      "name": "svg",
+      "line": 231,
+      "type": "constant",
+      "value": "`<svg width"
+    },
+    {
+      "name": "theme",
+      "line": 242,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "html",
+      "line": 245,
+      "type": "constant",
+      "value": "document.documentElement;"
+    },
+    {
+      "name": "current",
+      "line": 251,
+      "type": "constant",
+      "value": "theme.get();"
+    },
+    {
+      "name": "order",
+      "line": 252,
+      "type": "array",
+      "value": "[THEMES.DARK, THEMES.DIM, THEMES.LIGHT];"
+    },
+    {
+      "name": "next",
+      "line": 253,
+      "type": "constant",
+      "value": "order[(order.indexOf(current) + 1) % order.length];"
+    },
+    {
+      "name": "themeToggle",
+      "line": 257,
+      "type": "constant",
+      "value": "$byId(IDS.themeToggle);"
+    },
+    {
+      "name": "saved",
+      "line": 261,
+      "type": "constant",
+      "value": "storage.load(STORAGE_KEYS.THEME_PREFERENCE);"
+    },
+    {
+      "name": "initial",
+      "line": 262,
+      "type": "constant",
+      "value": "saved || theme.get() || THEMES.DIM;"
+    },
+    {
+      "name": "loadingBar",
+      "line": 268,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "steps",
+      "line": 286,
+      "type": "constant",
+      "value": "Math.floor(Math.random() * 3) + 3;"
+    },
+    {
+      "name": "delay",
+      "line": 290,
+      "type": "constant",
+      "value": "150 * i + Math.random() * 300;"
+    },
+    {
+      "name": "increment",
+      "line": 291,
+      "type": "constant",
+      "value": "0.2 + Math.random() * 0.25;"
+    },
+    {
+      "name": "timer",
+      "line": 294,
+      "type": "constant",
+      "value": "setTimeout(()"
+    },
+    {
+      "name": "timer",
+      "line": 311,
+      "type": "constant",
+      "value": "setTimeout(()"
+    },
+    {
+      "name": "pageUpdates",
+      "line": 332,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "breadcrumbList",
+      "line": 342,
+      "type": "constant",
+      "value": "document.querySelector(containerId);"
+    },
+    {
+      "name": "oldContent",
+      "line": 345,
+      "type": "constant",
+      "value": "animateChanges ? breadcrumbList.innerHTML : null;"
+    },
+    {
+      "name": "ellipsisItem",
+      "line": 360,
+      "type": "constant",
+      "value": "document.createElement(\"li\");"
+    },
+    {
+      "name": "button",
+      "line": 363,
+      "type": "constant",
+      "value": "document.createElement(\"button\");"
+    },
+    {
+      "name": "chevron",
+      "line": 380,
+      "type": "constant",
+      "value": "document.createElement(\"li\");"
+    },
+    {
+      "name": "breadcrumbItem",
+      "line": 392,
+      "type": "constant",
+      "value": "document.createElement(\"li\");"
+    },
+    {
+      "name": "element",
+      "line": 405,
+      "type": "constant",
+      "value": "document.createElement(\"button\");"
+    },
+    {
+      "name": "meta",
+      "line": 473,
+      "type": "constant",
+      "value": "document.createElement(\"meta\");"
+    },
+    {
+      "name": "chevron",
+      "line": 482,
+      "type": "constant",
+      "value": "document.createElement(\"li\");"
+    },
+    {
+      "name": "wrapper",
+      "line": 495,
+      "type": "constant",
+      "value": "breadcrumbList.closest('.breadcrumb-wrapper');"
+    },
+    {
+      "name": "overlays",
+      "line": 507,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "modal",
+      "line": 537,
+      "type": "constant",
+      "value": "document.getElementById(id);"
+    },
+    {
+      "name": "id",
+      "line": 558,
+      "type": "constant",
+      "value": "\"confirm-dialog\";"
+    },
+    {
+      "name": "modal",
+      "line": 571,
+      "type": "constant",
+      "value": "document.getElementById(id);"
+    },
+    {
+      "name": "handleCancel",
+      "line": 573,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "handleOk",
+      "line": 578,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "id",
+      "line": 590,
+      "type": "constant",
+      "value": "\"alert-dialog\";"
+    },
+    {
+      "name": "modal",
+      "line": 602,
+      "type": "constant",
+      "value": "document.getElementById(id);"
+    },
+    {
+      "name": "handleOk",
+      "line": 603,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "id",
+      "line": 623,
+      "type": "constant",
+      "value": "\"prompt-form\";"
+    },
+    {
+      "name": "modal",
+      "line": 639,
+      "type": "constant",
+      "value": "document.getElementById(id);"
+    },
+    {
+      "name": "input",
+      "line": 640,
+      "type": "constant",
+      "value": "modal.querySelector(\".input\");"
+    },
+    {
+      "name": "handleCancel",
+      "line": 644,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "handleOk",
+      "line": 649,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "musicPlayer",
+      "line": 689,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "drawer",
+      "line": 691,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "drawer",
+      "line": 700,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "drawer",
+      "line": 709,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "queueList",
+      "line": 739,
+      "type": "constant",
+      "value": "document.getElementById('queueList');"
+    },
+    {
+      "name": "emptyState",
+      "line": 742,
+      "type": "constant",
+      "value": "queueList.querySelector('.empty');"
+    },
+    {
+      "name": "items",
+      "line": 746,
+      "type": "constant",
+      "value": "queueList.querySelectorAll('li:not(.empty)');"
+    },
+    {
+      "name": "existingItems",
+      "line": 753,
+      "type": "constant",
+      "value": "queueList.querySelectorAll('li:not(.empty)');"
+    },
+    {
+      "name": "listItem",
+      "line": 757,
+      "type": "constant",
+      "value": "document.createElement('li');"
+    },
+    {
+      "name": "playBtn",
+      "line": 784,
+      "type": "constant",
+      "value": "listItem.querySelector('[data-action"
+    },
+    {
+      "name": "removeBtn",
+      "line": 792,
+      "type": "constant",
+      "value": "listItem.querySelector('[data-action"
+    },
+    {
+      "name": "recentList",
+      "line": 808,
+      "type": "constant",
+      "value": "document.getElementById('recentList');"
+    },
+    {
+      "name": "emptyState",
+      "line": 811,
+      "type": "constant",
+      "value": "recentList.querySelector('.empty');"
+    },
+    {
+      "name": "items",
+      "line": 815,
+      "type": "constant",
+      "value": "recentList.querySelectorAll('li:not(.empty)');"
+    },
+    {
+      "name": "existingItems",
+      "line": 822,
+      "type": "constant",
+      "value": "recentList.querySelectorAll('li:not(.empty)');"
+    },
+    {
+      "name": "listItem",
+      "line": 826,
+      "type": "constant",
+      "value": "document.createElement('li');"
+    },
+    {
+      "name": "playBtn",
+      "line": 853,
+      "type": "constant",
+      "value": "listItem.querySelector('[data-action"
+    },
+    {
+      "name": "queueBtn",
+      "line": 861,
+      "type": "constant",
+      "value": "listItem.querySelector('[data-action"
+    },
+    {
+      "name": "musicPlayerElement",
+      "line": 876,
+      "type": "constant",
+      "value": "document.getElementById('musicPlayer');"
+    },
+    {
+      "name": "handleTouchStart",
+      "line": 882,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "handleTouchMove",
+      "line": 887,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "deltaX",
+      "line": 888,
+      "type": "constant",
+      "value": "Math.abs(e.touches[0].clientX - startX);"
+    },
+    {
+      "name": "deltaY",
+      "line": 889,
+      "type": "constant",
+      "value": "Math.abs(e.touches[0].clientY - startY);"
+    },
+    {
+      "name": "drawerScroller",
+      "line": 907,
+      "type": "constant",
+      "value": "document.querySelector('.drawerScroller');"
+    },
+    {
+      "name": "drawer",
+      "line": 908,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "handleTouchStart",
+      "line": 916,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "handleTouchMove",
+      "line": 923,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "deltaY",
+      "line": 927,
+      "type": "constant",
+      "value": "currentY - startY;"
+    },
+    {
+      "name": "handleTouchEnd",
+      "line": 934,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "deltaY",
+      "line": 940,
+      "type": "constant",
+      "value": "currentY - startY;"
+    },
+    {
+      "name": "deltaY",
+      "line": 966,
+      "type": "constant",
+      "value": "currentY - startY;"
+    },
+    {
+      "name": "deltaY",
+      "line": 977,
+      "type": "constant",
+      "value": "currentY - startY;"
+    },
+    {
+      "name": "closeBtn",
+      "line": 993,
+      "type": "constant",
+      "value": "document.getElementById('closeBtn');"
+    },
+    {
+      "name": "tabName",
+      "line": 1000,
+      "type": "constant",
+      "value": "tab.dataset.tab;"
+    },
+    {
+      "name": "queueBtn",
+      "line": 1005,
+      "type": "constant",
+      "value": "document.getElementById('queueBtn');"
+    },
+    {
+      "name": "siteMap",
+      "line": 1015,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "artistName",
+      "line": 1027,
+      "type": "constant",
+      "value": "params.artist || siteMap.getParameterByName(\"artist\", window.location.href);"
+    },
+    {
+      "name": "artistData",
+      "line": 1028,
+      "type": "constant",
+      "value": "window.music?.find((a)"
+    },
+    {
+      "name": "path",
+      "line": 1043,
+      "type": "constant",
+      "value": "window.location.pathname + window.location.search;"
+    },
+    {
+      "name": "route",
+      "line": 1051,
+      "type": "constant",
+      "value": "this.routes[key];"
+    },
+    {
+      "name": "match",
+      "line": 1052,
+      "type": "constant",
+      "value": "path.match(route.pattern);"
+    },
+    {
+      "name": "params",
+      "line": 1055,
+      "type": "object",
+      "value": "{};"
+    },
+    {
+      "name": "contentLoading",
+      "line": 1112,
+      "type": "constant",
+      "value": "$byId(IDS.contentLoading);"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 1130,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 1164,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 1178,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "albumsContainer",
+      "line": 1190,
+      "type": "constant",
+      "value": "$byId(IDS.albumsContainer);"
+    },
+    {
+      "name": "albumsGrid",
+      "line": 1195,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "albumCard",
+      "line": 1199,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "allSongs",
+      "line": 1220,
+      "type": "array",
+      "value": "[];"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 1261,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "artistsGrid",
+      "line": 1266,
+      "type": "constant",
+      "value": "$byId(IDS.artistsGrid);"
+    },
+    {
+      "name": "artistCard",
+      "line": 1269,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "artistSearch",
+      "line": 1309,
+      "type": "constant",
+      "value": "$byId(IDS.artistSearch);"
+    },
+    {
+      "name": "query",
+      "line": 1312,
+      "type": "constant",
+      "value": "e.target.value.toLowerCase().trim();"
+    },
+    {
+      "name": "artistName",
+      "line": 1315,
+      "type": "constant",
+      "value": "card.querySelector(\"h3\").textContent.toLowerCase();"
+    },
+    {
+      "name": "genreTag",
+      "line": 1316,
+      "type": "constant",
+      "value": "card.querySelector(\".genre-tag\")?.textContent.toLowerCase() || \"\";"
+    },
+    {
+      "name": "matches",
+      "line": 1318,
+      "type": "constant",
+      "value": "artistName.includes(query) || genreTag.includes(query);"
+    },
+    {
+      "name": "genreFilters",
+      "line": 1324,
+      "type": "constant",
+      "value": "$byId(IDS.genreFilters);"
+    },
+    {
+      "name": "genres",
+      "line": 1326,
+      "type": "constant",
+      "value": "new Set();"
+    },
+    {
+      "name": "genreBtn",
+      "line": 1335,
+      "type": "constant",
+      "value": "document.createElement(\"button\");"
+    },
+    {
+      "name": "activeFilters",
+      "line": 1344,
+      "type": "constant",
+      "value": "Array.from(genreFilters.querySelectorAll(\".\" + CLASSES.active)).map((btn)"
+    },
+    {
+      "name": "cardGenre",
+      "line": 1347,
+      "type": "constant",
+      "value": "card.querySelector(\".genre-tag\")?.textContent.toLowerCase() || \"\";"
+    },
+    {
+      "name": "regex",
+      "line": 1364,
+      "type": "constant",
+      "value": "new RegExp(\"[?&]\" + name + \"("
+    },
+    {
+      "name": "results",
+      "line": 1365,
+      "type": "constant",
+      "value": "regex.exec(url);"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 1378,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "albumsContainer",
+      "line": 1421,
+      "type": "constant",
+      "value": "$byId(IDS.albumsContainer);"
+    },
+    {
+      "name": "currentAlbumDisplay",
+      "line": 1459,
+      "type": "constant",
+      "value": "$byId(\"current-album-display\");"
+    },
+    {
+      "name": "album",
+      "line": 1462,
+      "type": "constant",
+      "value": "artistData.albums[albumIndex];"
+    },
+    {
+      "name": "albumId",
+      "line": 1463,
+      "type": "constant",
+      "value": "`${artistData.artist}-${album.album}`.replace(/\\s+/g, \"\").toLowerCase();"
+    },
+    {
+      "name": "albumTabs",
+      "line": 1485,
+      "type": "constant",
+      "value": "document.querySelectorAll(\".album-tab\");"
+    },
+    {
+      "name": "albumIndex",
+      "line": 1491,
+      "type": "constant",
+      "value": "parseInt(tab.dataset.albumIndex);"
+    },
+    {
+      "name": "albumName",
+      "line": 1492,
+      "type": "constant",
+      "value": "tab.dataset.albumName;"
+    },
+    {
+      "name": "playButton",
+      "line": 1508,
+      "type": "constant",
+      "value": "document.querySelector(\".artist-header .play\");"
+    },
+    {
+      "name": "followButton",
+      "line": 1515,
+      "type": "constant",
+      "value": "document.querySelector(\".artist-header .follow\");"
+    },
+    {
+      "name": "isFavorite",
+      "line": 1517,
+      "type": "constant",
+      "value": "appState.favorites.has(\"artists\", artistData.artist);"
+    },
+    {
+      "name": "wasFavorite",
+      "line": 1522,
+      "type": "constant",
+      "value": "appState.favorites.toggle(\"artists\", artistData.artist);"
+    },
+    {
+      "name": "playAlbumBtn",
+      "line": 1529,
+      "type": "constant",
+      "value": "e.target.closest(\".play-album\");"
+    },
+    {
+      "name": "activeTab",
+      "line": 1533,
+      "type": "constant",
+      "value": "document.querySelector(\".album-tab.active\");"
+    },
+    {
+      "name": "albumIndex",
+      "line": 1535,
+      "type": "constant",
+      "value": "parseInt(activeTab.dataset.albumIndex);"
+    },
+    {
+      "name": "album",
+      "line": 1536,
+      "type": "constant",
+      "value": "artistData.albums[albumIndex];"
+    },
+    {
+      "name": "songsContainer",
+      "line": 1546,
+      "type": "constant",
+      "value": "albumContainer.querySelector(\".songs-container\");"
+    },
+    {
+      "name": "songData",
+      "line": 1557,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "isFavorite",
+      "line": 1564,
+      "type": "constant",
+      "value": "appState.favorites.has(\"songs\", song.id);"
+    },
+    {
+      "name": "songElement",
+      "line": 1566,
+      "type": "constant",
+      "value": "create("
+    },
+    {
+      "name": "wasFavorite",
+      "line": 1589,
+      "type": "constant",
+      "value": "appState.favorites.toggle(\"songs\", songData.id);"
+    },
+    {
+      "name": "message",
+      "line": 1590,
+      "type": "constant",
+      "value": "wasFavorite ? `Added \"${songData.title}\" to your favorite music` : `Removed \"${songData.title}\" from your favorite music`;"
+    },
+    {
+      "name": "playlistContainer",
+      "line": 1610,
+      "type": "constant",
+      "value": "document.querySelector('[data-playlist-id]');"
+    },
+    {
+      "name": "playlistId",
+      "line": 1612,
+      "type": "constant",
+      "value": "playlistContainer.dataset.playlistId;"
+    },
+    {
+      "name": "songData",
+      "line": 1666,
+      "type": "constant",
+      "value": "JSON.parse(songItem.dataset.song);"
+    },
+    {
+      "name": "playButton",
+      "line": 1675,
+      "type": "constant",
+      "value": "songItem.querySelector(\"[data-action"
+    },
+    {
+      "name": "songData",
+      "line": 1680,
+      "type": "constant",
+      "value": "JSON.parse(songItem.dataset.song);"
+    },
+    {
+      "name": "artistElement",
+      "line": 1689,
+      "type": "constant",
+      "value": "songItem.querySelector(\"[data-artist]\");"
+    },
+    {
+      "name": "artistName",
+      "line": 1693,
+      "type": "constant",
+      "value": "artistElement.dataset.artist;"
+    },
+    {
+      "name": "action",
+      "line": 1704,
+      "type": "constant",
+      "value": "actionBtn.dataset.action;"
+    },
+    {
+      "name": "songData",
+      "line": 1705,
+      "type": "constant",
+      "value": "JSON.parse(songItem.dataset.song);"
+    },
+    {
+      "name": "context",
+      "line": 1706,
+      "type": "constant",
+      "value": "songItem.dataset.context || 'base';"
+    },
+    {
+      "name": "popover",
+      "line": 1721,
+      "type": "constant",
+      "value": "document.createElement('div');"
+    },
+    {
+      "name": "viewport",
+      "line": 1739,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "triggerRect",
+      "line": 1744,
+      "type": "constant",
+      "value": "triggerButton.getBoundingClientRect();"
+    },
+    {
+      "name": "popoverRect",
+      "line": 1745,
+      "type": "constant",
+      "value": "popover.getBoundingClientRect();"
+    },
+    {
+      "name": "action",
+      "line": 1772,
+      "type": "constant",
+      "value": "btn.dataset.action;"
+    },
+    {
+      "name": "closePopover",
+      "line": 1778,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "escapeHandler",
+      "line": 1786,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "playlistOptions",
+      "line": 1817,
+      "type": "constant",
+      "value": "appState.playlists.map(playlist"
+    },
+    {
+      "name": "content",
+      "line": 1831,
+      "type": "constant",
+      "value": "`"
+    },
+    {
+      "name": "modal",
+      "line": 1853,
+      "type": "constant",
+      "value": "document.getElementById('playlist-selector');"
+    },
+    {
+      "name": "playlistId",
+      "line": 1857,
+      "type": "constant",
+      "value": "option.dataset.playlistId;"
+    },
+    {
+      "name": "newPlaylist",
+      "line": 1865,
+      "type": "constant",
+      "value": "await playlists.create();"
+    },
+    {
+      "name": "shareUrl",
+      "line": 1891,
+      "type": "constant",
+      "value": "window.location.href;"
+    },
+    {
+      "name": "content",
+      "line": 1904,
+      "type": "constant",
+      "value": "`"
+    },
+    {
+      "name": "modal",
+      "line": 1932,
+      "type": "constant",
+      "value": "document.getElementById('more-options');"
+    },
+    {
+      "name": "action",
+      "line": 1936,
+      "type": "constant",
+      "value": "item.dataset.action;"
+    },
+    {
+      "name": "content",
+      "line": 1957,
+      "type": "constant",
+      "value": "`"
+    },
+    {
+      "name": "homePage",
+      "line": 1993,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 2001,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "styleEl",
+      "line": 2079,
+      "type": "constant",
+      "value": "document.createElement(\"style\");"
+    },
+    {
+      "name": "container",
+      "line": 2381,
+      "type": "constant",
+      "value": "$byId(IDS.recentlyPlayedSection);"
+    },
+    {
+      "name": "recentTracks",
+      "line": 2389,
+      "type": "constant",
+      "value": "appState.recentlyPlayed.slice(0, 5);"
+    },
+    {
+      "name": "songData",
+      "line": 2416,
+      "type": "constant",
+      "value": "JSON.parse(track.dataset.song);"
+    },
+    {
+      "name": "artistName",
+      "line": 2425,
+      "type": "constant",
+      "value": "artistEl.dataset.artist;"
+    },
+    {
+      "name": "container",
+      "line": 2436,
+      "type": "constant",
+      "value": "$byId(IDS.randomAlbumsSection);"
+    },
+    {
+      "name": "albums",
+      "line": 2439,
+      "type": "constant",
+      "value": "homePage.getRandomAlbums(6);"
+    },
+    {
+      "name": "artistName",
+      "line": 2473,
+      "type": "constant",
+      "value": "playBtn.dataset.artist;"
+    },
+    {
+      "name": "albumName",
+      "line": 2474,
+      "type": "constant",
+      "value": "playBtn.dataset.album;"
+    },
+    {
+      "name": "artistName",
+      "line": 2483,
+      "type": "constant",
+      "value": "albumCard.dataset.artist;"
+    },
+    {
+      "name": "albumName",
+      "line": 2484,
+      "type": "constant",
+      "value": "albumCard.dataset.album;"
+    },
+    {
+      "name": "artistName",
+      "line": 2492,
+      "type": "constant",
+      "value": "artistEl.dataset.artist;"
+    },
+    {
+      "name": "container",
+      "line": 2503,
+      "type": "constant",
+      "value": "$byId(IDS.favoriteArtistsSection);"
+    },
+    {
+      "name": "artists",
+      "line": 2511,
+      "type": "constant",
+      "value": "Array.from(appState.favorites.artists).slice(0, 6);"
+    },
+    {
+      "name": "artistData",
+      "line": 2516,
+      "type": "constant",
+      "value": "window.music?.find((a)"
+    },
+    {
+      "name": "artistName",
+      "line": 2537,
+      "type": "constant",
+      "value": "artistEl.dataset.artist;"
+    },
+    {
+      "name": "container",
+      "line": 2548,
+      "type": "constant",
+      "value": "$byId(IDS.playlistsSection);"
+    },
+    {
+      "name": "displayPlaylists",
+      "line": 2558,
+      "type": "constant",
+      "value": "appState.playlists.slice(0, 3);"
+    },
+    {
+      "name": "playlistId",
+      "line": 2595,
+      "type": "constant",
+      "value": "playlistEl.dataset.playlistId;"
+    },
+    {
+      "name": "createBtn",
+      "line": 2600,
+      "type": "constant",
+      "value": "container.querySelector(\".create-playlist-btn\");"
+    },
+    {
+      "name": "newPlaylist",
+      "line": 2603,
+      "type": "constant",
+      "value": "playlists.create();"
+    },
+    {
+      "name": "container",
+      "line": 2612,
+      "type": "constant",
+      "value": "$byId(IDS.favoriteSongsSection);"
+    },
+    {
+      "name": "songs",
+      "line": 2620,
+      "type": "constant",
+      "value": "homePage.getSongsByIds(Array.from(appState.favorites.songs).slice(0, 5));"
+    },
+    {
+      "name": "songData",
+      "line": 2652,
+      "type": "constant",
+      "value": "JSON.parse(track.dataset.song);"
+    },
+    {
+      "name": "artistName",
+      "line": 2661,
+      "type": "constant",
+      "value": "artistEl.dataset.artist;"
+    },
+    {
+      "name": "songId",
+      "line": 2673,
+      "type": "constant",
+      "value": "heartBtn.dataset.songId;"
+    },
+    {
+      "name": "track",
+      "line": 2676,
+      "type": "constant",
+      "value": "heartBtn.closest(\".recent-track\");"
+    },
+    {
+      "name": "remaining",
+      "line": 2683,
+      "type": "constant",
+      "value": "container.querySelectorAll(\".recent-track\");"
+    },
+    {
+      "name": "view",
+      "line": 2696,
+      "type": "constant",
+      "value": "link.dataset.view;"
+    },
+    {
+      "name": "allAlbums",
+      "line": 2725,
+      "type": "array",
+      "value": "[];"
+    },
+    {
+      "name": "shuffled",
+      "line": 2737,
+      "type": "array",
+      "value": "[...allAlbums].sort(()"
+    },
+    {
+      "name": "songs",
+      "line": 2744,
+      "type": "array",
+      "value": "[];"
+    },
+    {
+      "name": "artist",
+      "line": 2767,
+      "type": "constant",
+      "value": "window.music.find((a)"
+    },
+    {
+      "name": "album",
+      "line": 2770,
+      "type": "constant",
+      "value": "artist.albums.find((a)"
+    },
+    {
+      "name": "icons",
+      "line": 2795,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "storage",
+      "line": 2814,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "data",
+      "line": 2825,
+      "type": "constant",
+      "value": "localStorage.getItem(key);"
+    },
+    {
+      "name": "favoriteTypes",
+      "line": 2833,
+      "type": "object",
+      "value": "["
+    },
+    {
+      "name": "data",
+      "line": 2849,
+      "type": "constant",
+      "value": "storage.load(key);"
+    },
+    {
+      "name": "dataLoaders",
+      "line": 2855,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "data",
+      "line": 2862,
+      "type": "constant",
+      "value": "storage.load(key);"
+    },
+    {
+      "name": "mediaSession",
+      "line": 2868,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "actions",
+      "line": 2874,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "player",
+      "line": 2926,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "events",
+      "line": 2934,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "bar",
+      "line": 2948,
+      "type": "constant",
+      "value": "$byId(IDS.progressBar);"
+    },
+    {
+      "name": "thumb",
+      "line": 2949,
+      "type": "constant",
+      "value": "$byId(IDS.progressThumb);"
+    },
+    {
+      "name": "onPointerDown",
+      "line": 2952,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "moveTarget",
+      "line": 2960,
+      "type": "constant",
+      "value": "bar;"
+    },
+    {
+      "name": "onPointerMove",
+      "line": 2966,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "onPointerUp",
+      "line": 2972,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "onEnter",
+      "line": 2981,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "onLeave",
+      "line": 2982,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "rect",
+      "line": 2990,
+      "type": "constant",
+      "value": "bar.getBoundingClientRect();"
+    },
+    {
+      "name": "x",
+      "line": 2991,
+      "type": "constant",
+      "value": "e.clientX !"
+    },
+    {
+      "name": "time",
+      "line": 2995,
+      "type": "function",
+      "value": "(appState.duration || appState.audio?.duration || 0) * (pct / 100);"
+    },
+    {
+      "name": "fill",
+      "line": 3003,
+      "type": "constant",
+      "value": "$byId(IDS.progressFill);"
+    },
+    {
+      "name": "thumb",
+      "line": 3004,
+      "type": "constant",
+      "value": "$byId(IDS.progressThumb);"
+    },
+    {
+      "name": "currentTimeElement",
+      "line": 3005,
+      "type": "constant",
+      "value": "$byId(IDS.currentTime);"
+    },
+    {
+      "name": "songFileName",
+      "line": 3014,
+      "type": "constant",
+      "value": "songData.title.toLowerCase().replace(/\\s+/g, \"\").replace(/[^\\w]/g, \"\");"
+    },
+    {
+      "name": "audioUrl",
+      "line": 3015,
+      "type": "constant",
+      "value": "`https://koders.cloud/global/content/audio/${songFileName}.${format}`;"
+    },
+    {
+      "name": "loadHandler",
+      "line": 3018,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "errorHandler",
+      "line": 3019,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "success",
+      "line": 3044,
+      "type": "constant",
+      "value": "await player.loadAudioFile(songData);"
+    },
+    {
+      "name": "totalTimeElement",
+      "line": 3063,
+      "type": "constant",
+      "value": "$byId(IDS.totalTime);"
+    },
+    {
+      "name": "duration",
+      "line": 3078,
+      "type": "constant",
+      "value": "appState.duration || appState.audio.duration || 0;"
+    },
+    {
+      "name": "currentTime",
+      "line": 3079,
+      "type": "constant",
+      "value": "appState.audio.currentTime || 0;"
+    },
+    {
+      "name": "percent",
+      "line": 3080,
+      "type": "constant",
+      "value": "duration > 0 ? (currentTime / duration) * 100 : 0;"
+    },
+    {
+      "name": "artist",
+      "line": 3093,
+      "type": "constant",
+      "value": "window.music.find((a)"
+    },
+    {
+      "name": "album",
+      "line": 3094,
+      "type": "constant",
+      "value": "artist?.albums.find((al)"
+    },
+    {
+      "name": "currentIndex",
+      "line": 3096,
+      "type": "constant",
+      "value": "album.songs.findIndex((s)"
+    },
+    {
+      "name": "nextIndex",
+      "line": 3097,
+      "type": "constant",
+      "value": "appState.shuffleMode ? Math.floor(Math.random() * album.songs.length) : (currentIndex + 1) % album.songs.length;"
+    },
+    {
+      "name": "artist",
+      "line": 3106,
+      "type": "constant",
+      "value": "window.music.find((a)"
+    },
+    {
+      "name": "album",
+      "line": 3107,
+      "type": "constant",
+      "value": "artist?.albums.find((al)"
+    },
+    {
+      "name": "currentIndex",
+      "line": 3109,
+      "type": "constant",
+      "value": "album.songs.findIndex((s)"
+    },
+    {
+      "name": "prevIndex",
+      "line": 3110,
+      "type": "function",
+      "value": "(currentIndex - 1 + album.songs.length) % album.songs.length;"
+    },
+    {
+      "name": "controls",
+      "line": 3115,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "nextSong",
+      "line": 3126,
+      "type": "constant",
+      "value": "appState.queue.getNext();"
+    },
+    {
+      "name": "nextInAlbum",
+      "line": 3132,
+      "type": "constant",
+      "value": "player.getNextInAlbum();"
+    },
+    {
+      "name": "prevSong",
+      "line": 3144,
+      "type": "constant",
+      "value": "appState.recentlyPlayed.shift();"
+    },
+    {
+      "name": "prevInAlbum",
+      "line": 3149,
+      "type": "constant",
+      "value": "player.getPreviousInAlbum();"
+    },
+    {
+      "name": "safeTime",
+      "line": 3158,
+      "type": "constant",
+      "value": "Math.max(0, Math.min(appState.duration || 0, time));"
+    },
+    {
+      "name": "newTime",
+      "line": 3164,
+      "type": "constant",
+      "value": "appState.audio.currentTime + seconds;"
+    },
+    {
+      "name": "allSongs",
+      "line": 3181,
+      "type": "array",
+      "value": "[];"
+    },
+    {
+      "name": "j",
+      "line": 3201,
+      "type": "constant",
+      "value": "Math.floor(Math.random() * (i + 1));"
+    },
+    {
+      "name": "modeText",
+      "line": 3226,
+      "type": "constant",
+      "value": "appState.repeatMode"
+    },
+    {
+      "name": "ui",
+      "line": 3232,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "nowPlayingArea",
+      "line": 3234,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "songTitle",
+      "line": 3235,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.songName);"
+    },
+    {
+      "name": "elements",
+      "line": 3244,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "container",
+      "line": 3266,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.albumArtwork);"
+    },
+    {
+      "name": "artist",
+      "line": 3267,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.artistName);"
+    },
+    {
+      "name": "songTitle",
+      "line": 3268,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.songName);"
+    },
+    {
+      "name": "playIndicator",
+      "line": 3269,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.playIndicator);"
+    },
+    {
+      "name": "nowPlayingArea",
+      "line": 3270,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "svg",
+      "line": 3273,
+      "type": "constant",
+      "value": "container.querySelector(\"svg\");"
+    },
+    {
+      "name": "img",
+      "line": 3274,
+      "type": "constant",
+      "value": "container.querySelector(\"img\");"
+    },
+    {
+      "name": "albumUrl",
+      "line": 3277,
+      "type": "constant",
+      "value": "utils.getAlbumImageUrl(appState.currentSong.album);"
+    },
+    {
+      "name": "title",
+      "line": 3291,
+      "type": "constant",
+      "value": "appState.currentSong.title;"
+    },
+    {
+      "name": "navBarPlay",
+      "line": 3306,
+      "type": "constant",
+      "value": "$byId(IDS.playIconNavbar);"
+    },
+    {
+      "name": "navBarPause",
+      "line": 3307,
+      "type": "constant",
+      "value": "$byId(IDS.pauseIconNavbar);"
+    },
+    {
+      "name": "musicPlayerBtn",
+      "line": 3314,
+      "type": "constant",
+      "value": "$byId(IDS.playBtn);"
+    },
+    {
+      "name": "playIcon",
+      "line": 3316,
+      "type": "constant",
+      "value": "musicPlayerBtn.querySelector(\".icon.play\");"
+    },
+    {
+      "name": "pauseIcon",
+      "line": 3317,
+      "type": "constant",
+      "value": "musicPlayerBtn.querySelector(\".icon.pause\");"
+    },
+    {
+      "name": "shuffleBtn",
+      "line": 3327,
+      "type": "constant",
+      "value": "$byId(IDS.shuffleBtn);"
+    },
+    {
+      "name": "repeatBtn",
+      "line": 3334,
+      "type": "constant",
+      "value": "$byId(IDS.repeatBtn);"
+    },
+    {
+      "name": "favoriteBtn",
+      "line": 3343,
+      "type": "constant",
+      "value": "$byId(IDS.favoriteBtn);"
+    },
+    {
+      "name": "isFavorite",
+      "line": 3345,
+      "type": "constant",
+      "value": "appState.favorites.has(\"songs\", appState.currentSong.id);"
+    },
+    {
+      "name": "heartIcon",
+      "line": 3349,
+      "type": "constant",
+      "value": "favoriteBtn.querySelector(\"svg\");"
+    },
+    {
+      "name": "counts",
+      "line": 3358,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "element",
+      "line": 3366,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "dropdown",
+      "line": 3378,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "menu",
+      "line": 3382,
+      "type": "constant",
+      "value": "$byId(IDS.dropdownMenu);"
+    },
+    {
+      "name": "trigger",
+      "line": 3383,
+      "type": "constant",
+      "value": "$byId(IDS.menuTrigger);"
+    },
+    {
+      "name": "isVisible",
+      "line": 3387,
+      "type": "constant",
+      "value": "menu.classList.contains(CLASSES.show);"
+    },
+    {
+      "name": "menu",
+      "line": 3399,
+      "type": "constant",
+      "value": "$byId(IDS.dropdownMenu);"
+    },
+    {
+      "name": "trigger",
+      "line": 3400,
+      "type": "constant",
+      "value": "$byId(IDS.menuTrigger);"
+    },
+    {
+      "name": "menu",
+      "line": 3413,
+      "type": "constant",
+      "value": "$byId(IDS.dropdownMenu);"
+    },
+    {
+      "name": "trigger",
+      "line": 3414,
+      "type": "constant",
+      "value": "$byId(IDS.menuTrigger);"
+    },
+    {
+      "name": "playlists",
+      "line": 3423,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "playlist",
+      "line": 3430,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "playlist",
+      "line": 3451,
+      "type": "constant",
+      "value": "appState.playlists.find((p)"
+    },
+    {
+      "name": "exists",
+      "line": 3457,
+      "type": "constant",
+      "value": "playlist.songs.some((s)"
+    },
+    {
+      "name": "playlist",
+      "line": 3471,
+      "type": "constant",
+      "value": "appState.playlists.find((p)"
+    },
+    {
+      "name": "initialLength",
+      "line": 3474,
+      "type": "constant",
+      "value": "playlist.songs.length;"
+    },
+    {
+      "name": "playlist",
+      "line": 3487,
+      "type": "constant",
+      "value": "appState.playlists.find((p)"
+    },
+    {
+      "name": "playlist",
+      "line": 3501,
+      "type": "constant",
+      "value": "appState.playlists.find((p)"
+    },
+    {
+      "name": "confirmed",
+      "line": 3504,
+      "type": "constant",
+      "value": "await overlays.dialog.confirm("
+    },
+    {
+      "name": "playlistName",
+      "line": 3514,
+      "type": "constant",
+      "value": "playlist.name;"
+    },
+    {
+      "name": "name",
+      "line": 3523,
+      "type": "constant",
+      "value": "await overlays.form.prompt("
+    },
+    {
+      "name": "content",
+      "line": 3547,
+      "type": "constant",
+      "value": "`"
+    },
+    {
+      "name": "modalEl",
+      "line": 3602,
+      "type": "constant",
+      "value": "document.getElementById(\"playlist-viewer\");"
+    },
+    {
+      "name": "playlist",
+      "line": 3607,
+      "type": "constant",
+      "value": "appState.playlists.find((p)"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 3616,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 3727,
+      "type": "constant",
+      "value": "root;"
+    },
+    {
+      "name": "createBtn",
+      "line": 3730,
+      "type": "constant",
+      "value": "dynamicContent.querySelector(\".create-playlist-btn\");"
+    },
+    {
+      "name": "newPlaylist",
+      "line": 3733,
+      "type": "constant",
+      "value": "await playlists.create();"
+    },
+    {
+      "name": "playlistId",
+      "line": 3743,
+      "type": "constant",
+      "value": "btn.dataset.playlistId;"
+    },
+    {
+      "name": "playlistId",
+      "line": 3751,
+      "type": "constant",
+      "value": "btn.dataset.playlistId;"
+    },
+    {
+      "name": "playlistId",
+      "line": 3759,
+      "type": "constant",
+      "value": "btn.dataset.playlistId;"
+    },
+    {
+      "name": "playlistId",
+      "line": 3768,
+      "type": "constant",
+      "value": "card.dataset.playlistId;"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 3775,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "playBtn",
+      "line": 3778,
+      "type": "constant",
+      "value": "dynamicContent.querySelector(\".play-playlist-btn\");"
+    },
+    {
+      "name": "editBtn",
+      "line": 3785,
+      "type": "constant",
+      "value": "dynamicContent.querySelector(\".edit-playlist-btn\");"
+    },
+    {
+      "name": "newName",
+      "line": 3788,
+      "type": "constant",
+      "value": "await overlays.form.prompt("
+    },
+    {
+      "name": "deleteBtn",
+      "line": 3806,
+      "type": "constant",
+      "value": "dynamicContent.querySelector(\".delete-playlist-btn\");"
+    },
+    {
+      "name": "browseBtn",
+      "line": 3817,
+      "type": "constant",
+      "value": "dynamicContent.querySelector(\".browse-music-btn\");"
+    },
+    {
+      "name": "songData",
+      "line": 3831,
+      "type": "constant",
+      "value": "JSON.parse(row.dataset.song);"
+    },
+    {
+      "name": "songRow",
+      "line": 3840,
+      "type": "constant",
+      "value": "btn.closest(\".song-row\");"
+    },
+    {
+      "name": "songData",
+      "line": 3842,
+      "type": "constant",
+      "value": "JSON.parse(songRow.dataset.song);"
+    },
+    {
+      "name": "artistName",
+      "line": 3851,
+      "type": "constant",
+      "value": "artistEl.dataset.artist;"
+    },
+    {
+      "name": "action",
+      "line": 3863,
+      "type": "constant",
+      "value": "btn.dataset.action;"
+    },
+    {
+      "name": "songRow",
+      "line": 3864,
+      "type": "constant",
+      "value": "btn.closest(\".song-row\");"
+    },
+    {
+      "name": "songData",
+      "line": 3865,
+      "type": "constant",
+      "value": "JSON.parse(songRow.dataset.song);"
+    },
+    {
+      "name": "heartIcon",
+      "line": 3870,
+      "type": "constant",
+      "value": "btn.querySelector(\"svg\");"
+    },
+    {
+      "name": "isFavorite",
+      "line": 3871,
+      "type": "constant",
+      "value": "appState.favorites.has(\"songs\", songData.id);"
+    },
+    {
+      "name": "playlistId",
+      "line": 3879,
+      "type": "constant",
+      "value": "songRow.dataset.playlistId;"
+    },
+    {
+      "name": "songIndex",
+      "line": 3880,
+      "type": "constant",
+      "value": "parseInt(songRow.dataset.songIndex);"
+    },
+    {
+      "name": "views",
+      "line": 3891,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "favoriteSongIds",
+      "line": 3893,
+      "type": "constant",
+      "value": "Array.from(appState.favorites.songs);"
+    },
+    {
+      "name": "favoriteSongs",
+      "line": 3905,
+      "type": "constant",
+      "value": "views.getSongsByIds(favoriteSongIds);"
+    },
+    {
+      "name": "content",
+      "line": 3907,
+      "type": "constant",
+      "value": "`"
+    },
+    {
+      "name": "modalEl",
+      "line": 3956,
+      "type": "constant",
+      "value": "document.getElementById(\"playlist-viewer\");"
+    },
+    {
+      "name": "favoriteArtistNames",
+      "line": 3961,
+      "type": "constant",
+      "value": "Array.from(appState.favorites.artists);"
+    },
+    {
+      "name": "favoriteArtists",
+      "line": 3973,
+      "type": "constant",
+      "value": "favoriteArtistNames.map((artistName)"
+    },
+    {
+      "name": "content",
+      "line": 3975,
+      "type": "constant",
+      "value": "`"
+    },
+    {
+      "name": "modalEl",
+      "line": 4007,
+      "type": "constant",
+      "value": "document.getElementById(\"artist-viewer\");"
+    },
+    {
+      "name": "allSongs",
+      "line": 4018,
+      "type": "array",
+      "value": "[];"
+    },
+    {
+      "name": "dynamicContent",
+      "line": 4054,
+      "type": "constant",
+      "value": "$byId(IDS.dynamicContent);"
+    },
+    {
+      "name": "prefersReducedMotion",
+      "line": 4065,
+      "type": "constant",
+      "value": "window.matchMedia?.(\"(prefers-reduced-motion: reduce)\")?.matches ?? false;"
+    },
+    {
+      "name": "notifications",
+      "line": 4067,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "existing",
+      "line": 4073,
+      "type": "constant",
+      "value": "document.getElementById(\"toast-portal\");"
+    },
+    {
+      "name": "duration",
+      "line": 4082,
+      "type": "constant",
+      "value": "Number.isFinite(options.duration) ? Math.max(1200, options.duration) : 5000;"
+    },
+    {
+      "name": "title",
+      "line": 4083,
+      "type": "constant",
+      "value": "options.title || null;"
+    },
+    {
+      "name": "iconHtml",
+      "line": 4084,
+      "type": "constant",
+      "value": "options.iconHtml || TOAST_ICONS[type] || TOAST_ICONS[NOTIFICATION_TYPES.INFO];"
+    },
+    {
+      "name": "toast",
+      "line": 4086,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "iconWrap",
+      "line": 4095,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "content",
+      "line": 4099,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "actions",
+      "line": 4105,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "undoBtn",
+      "line": 4109,
+      "type": "constant",
+      "value": "document.createElement(\"button\");"
+    },
+    {
+      "name": "progress",
+      "line": 4119,
+      "type": "constant",
+      "value": "document.createElement(\"div\");"
+    },
+    {
+      "name": "ctrl",
+      "line": 4130,
+      "type": "constant",
+      "value": "this.createTimerController({"
+    },
+    {
+      "name": "pause",
+      "line": 4138,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "resume",
+      "line": 4139,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "threshold",
+      "line": 4148,
+      "type": "constant",
+      "value": "56;"
+    },
+    {
+      "name": "maxFade",
+      "line": 4149,
+      "type": "constant",
+      "value": "80;"
+    },
+    {
+      "name": "startDrag",
+      "line": 4151,
+      "type": "function",
+      "value": "(clientX)"
+    },
+    {
+      "name": "onDrag",
+      "line": 4155,
+      "type": "function",
+      "value": "(clientX)"
+    },
+    {
+      "name": "dx",
+      "line": 4158,
+      "type": "constant",
+      "value": "clientX - drag.startX;"
+    },
+    {
+      "name": "abs",
+      "line": 4160,
+      "type": "constant",
+      "value": "Math.min(Math.abs(dx), maxFade);"
+    },
+    {
+      "name": "alpha",
+      "line": 4161,
+      "type": "constant",
+      "value": "1 - (abs / maxFade) * 0.85;"
+    },
+    {
+      "name": "endDrag",
+      "line": 4164,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "dx",
+      "line": 4166,
+      "type": "constant",
+      "value": "drag.lastX - drag.startX;"
+    },
+    {
+      "name": "t",
+      "line": 4198,
+      "type": "constant",
+      "value": "e.changedTouches?.[0];"
+    },
+    {
+      "name": "t",
+      "line": 4203,
+      "type": "constant",
+      "value": "e.changedTouches?.[0];"
+    },
+    {
+      "name": "dismiss",
+      "line": 4209,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "elapsed",
+      "line": 4232,
+      "type": "constant",
+      "value": "now - start;"
+    },
+    {
+      "name": "left",
+      "line": 4233,
+      "type": "constant",
+      "value": "Math.max(0, remaining - elapsed);"
+    },
+    {
+      "name": "ratioRemaining",
+      "line": 4234,
+      "type": "constant",
+      "value": "left / duration;"
+    },
+    {
+      "name": "bindClick",
+      "line": 4275,
+      "type": "function",
+      "value": "(el, handler)"
+    },
+    {
+      "name": "fn",
+      "line": 4277,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "bindClickAll",
+      "line": 4283,
+      "type": "function",
+      "value": "(nodeList, handler)"
+    },
+    {
+      "name": "eventHandlers",
+      "line": 4288,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "idTrigger",
+      "line": 4299,
+      "type": "constant",
+      "value": "$byId(IDS.nowPlayingArea);"
+    },
+    {
+      "name": "selTrigger",
+      "line": 4300,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "navbarPlayPause",
+      "line": 4303,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.playPause);"
+    },
+    {
+      "name": "navbarPrevious",
+      "line": 4306,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.previous);"
+    },
+    {
+      "name": "navbarNext",
+      "line": 4309,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.next);"
+    },
+    {
+      "name": "menuElements",
+      "line": 4314,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "el",
+      "line": 4320,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "menuActions",
+      "line": 4324,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "el",
+      "line": 4337,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "popupControls",
+      "line": 4343,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "tabName",
+      "line": 4363,
+      "type": "constant",
+      "value": "tab.dataset.tab;"
+    },
+    {
+      "name": "progressBar",
+      "line": 4370,
+      "type": "constant",
+      "value": "$bySelector(MUSIC_PLAYER.progressBar);"
+    },
+    {
+      "name": "handleProgressClick",
+      "line": 4373,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "rect",
+      "line": 4375,
+      "type": "constant",
+      "value": "progressBar.getBoundingClientRect();"
+    },
+    {
+      "name": "percent",
+      "line": 4376,
+      "type": "constant",
+      "value": "Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));"
+    },
+    {
+      "name": "newTime",
+      "line": 4377,
+      "type": "constant",
+      "value": "percent * appState.duration;"
+    },
+    {
+      "name": "startDrag",
+      "line": 4381,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "onDrag",
+      "line": 4388,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "rect",
+      "line": 4390,
+      "type": "constant",
+      "value": "progressBar.getBoundingClientRect();"
+    },
+    {
+      "name": "percent",
+      "line": 4391,
+      "type": "constant",
+      "value": "Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));"
+    },
+    {
+      "name": "newTime",
+      "line": 4392,
+      "type": "constant",
+      "value": "percent * appState.duration;"
+    },
+    {
+      "name": "endDrag",
+      "line": 4396,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "fn",
+      "line": 4420,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "shortcuts",
+      "line": 4422,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "handler",
+      "line": 4432,
+      "type": "constant",
+      "value": "shortcuts[e.code] || shortcuts[e.key];"
+    },
+    {
+      "name": "fn",
+      "line": 4441,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "dropdownMenu",
+      "line": 4442,
+      "type": "constant",
+      "value": "$byId(IDS.dropdownMenu);"
+    },
+    {
+      "name": "menuTrigger",
+      "line": 4443,
+      "type": "constant",
+      "value": "$byId(IDS.menuTrigger);"
+    },
+    {
+      "name": "drawerEl",
+      "line": 4446,
+      "type": "constant",
+      "value": "$byId(IDS.drawer);"
+    },
+    {
+      "name": "nowPlayingEl",
+      "line": 4447,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "navItem",
+      "line": 4450,
+      "type": "constant",
+      "value": "e.target.closest(\"[data-nav]\");"
+    },
+    {
+      "name": "navType",
+      "line": 4453,
+      "type": "constant",
+      "value": "navItem.dataset.nav;"
+    },
+    {
+      "name": "navHandlers",
+      "line": 4456,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "artistName",
+      "line": 4460,
+      "type": "constant",
+      "value": "navItem.dataset.artist;"
+    },
+    {
+      "name": "artist",
+      "line": 4464,
+      "type": "constant",
+      "value": "navItem.dataset.artist;"
+    },
+    {
+      "name": "album",
+      "line": 4465,
+      "type": "constant",
+      "value": "navItem.dataset.album;"
+    },
+    {
+      "name": "map",
+      "line": 4484,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "el",
+      "line": 4493,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "app",
+      "line": 4499,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "nowPlayingArea",
+      "line": 4521,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "eventHandlers",
+      "line": 4758,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "controlElements",
+      "line": 4769,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "element",
+      "line": 4774,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "navbarPlayPause",
+      "line": 4786,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.playPause);"
+    },
+    {
+      "name": "navbarPrevious",
+      "line": 4795,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.previous);"
+    },
+    {
+      "name": "navbarNext",
+      "line": 4804,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.next);"
+    },
+    {
+      "name": "nowPlayingArea",
+      "line": 4813,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "menuElements",
+      "line": 4824,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "element",
+      "line": 4831,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "menuActions",
+      "line": 4838,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "element",
+      "line": 4873,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "popupControls",
+      "line": 4882,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "isFavorite",
+      "line": 4891,
+      "type": "constant",
+      "value": "appState.favorites.toggle(\"songs\", appState.currentSong.id);"
+    },
+    {
+      "name": "elements",
+      "line": 4898,
+      "type": "constant",
+      "value": "document.querySelectorAll(selector);"
+    },
+    {
+      "name": "tabName",
+      "line": 4914,
+      "type": "constant",
+      "value": "tab.dataset.tab;"
+    },
+    {
+      "name": "progressBar",
+      "line": 4923,
+      "type": "constant",
+      "value": "$bySelector(MUSIC_PLAYER.progressBar);"
+    },
+    {
+      "name": "handleProgressClick",
+      "line": 4926,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "rect",
+      "line": 4929,
+      "type": "constant",
+      "value": "progressBar.getBoundingClientRect();"
+    },
+    {
+      "name": "percent",
+      "line": 4930,
+      "type": "constant",
+      "value": "Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));"
+    },
+    {
+      "name": "newTime",
+      "line": 4931,
+      "type": "constant",
+      "value": "percent * appState.duration;"
+    },
+    {
+      "name": "startDrag",
+      "line": 4943,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "onDrag",
+      "line": 4950,
+      "type": "function",
+      "value": "(e)"
+    },
+    {
+      "name": "rect",
+      "line": 4953,
+      "type": "constant",
+      "value": "progressBar.getBoundingClientRect();"
+    },
+    {
+      "name": "percent",
+      "line": 4954,
+      "type": "constant",
+      "value": "Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));"
+    },
+    {
+      "name": "newTime",
+      "line": 4955,
+      "type": "constant",
+      "value": "percent * appState.duration;"
+    },
+    {
+      "name": "endDrag",
+      "line": 4962,
+      "type": "function",
+      "value": "()"
+    },
+    {
+      "name": "shortcuts",
+      "line": 4979,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "handler",
+      "line": 5026,
+      "type": "constant",
+      "value": "shortcuts[e.code] || shortcuts[e.key];"
+    },
+    {
+      "name": "dropdownMenu",
+      "line": 5035,
+      "type": "constant",
+      "value": "$byId(IDS.dropdownMenu);"
+    },
+    {
+      "name": "menuTrigger",
+      "line": 5036,
+      "type": "constant",
+      "value": "$byId(IDS.menuTrigger);"
+    },
+    {
+      "name": "musicPlayer",
+      "line": 5041,
+      "type": "constant",
+      "value": "document.getElementById('musicPlayer');"
+    },
+    {
+      "name": "nowPlayingArea",
+      "line": 5042,
+      "type": "constant",
+      "value": "$bySelector(NAVBAR.nowPlaying);"
+    },
+    {
+      "name": "navItem",
+      "line": 5047,
+      "type": "constant",
+      "value": "e.target.closest(\"[data-nav]\");"
+    },
+    {
+      "name": "navType",
+      "line": 5050,
+      "type": "constant",
+      "value": "navItem.dataset.nav;"
+    },
+    {
+      "name": "navHandlers",
+      "line": 5054,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "artistName",
+      "line": 5058,
+      "type": "constant",
+      "value": "navItem.dataset.artist;"
+    },
+    {
+      "name": "artist",
+      "line": 5065,
+      "type": "constant",
+      "value": "navItem.dataset.artist;"
+    },
+    {
+      "name": "album",
+      "line": 5066,
+      "type": "constant",
+      "value": "navItem.dataset.album;"
+    },
+    {
+      "name": "musicPlayerControls",
+      "line": 5088,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "element",
+      "line": 5102,
+      "type": "constant",
+      "value": "$byId(id);"
+    },
+    {
+      "name": "musicPlayer",
+      "line": 5117,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "el",
+      "line": 5119,
+      "type": "constant",
+      "value": "$byId(IDS.musicPlayer);"
+    },
+    {
+      "name": "el",
+      "line": 5127,
+      "type": "constant",
+      "value": "$byId(IDS.musicPlayer);"
+    },
+    {
+      "name": "el",
+      "line": 5136,
+      "type": "constant",
+      "value": "$byId(IDS.musicPlayer);"
+    },
+    {
+      "name": "queueList",
+      "line": 5152,
+      "type": "constant",
+      "value": "$byId(\"queueList\");"
+    },
+    {
+      "name": "queueContainer",
+      "line": 5154,
+      "type": "constant",
+      "value": "queueList.parentElement;"
+    },
+    {
+      "name": "emptyState",
+      "line": 5155,
+      "type": "constant",
+      "value": "queueContainer.querySelector(\".empty\");"
+    },
+    {
+      "name": "index",
+      "line": 5186,
+      "type": "constant",
+      "value": "parseInt(item.dataset.index);"
+    },
+    {
+      "name": "playBtn",
+      "line": 5187,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "removeBtn",
+      "line": 5189,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "recentList",
+      "line": 5195,
+      "type": "constant",
+      "value": "$byId(\"recentList\");"
+    },
+    {
+      "name": "recentContainer",
+      "line": 5197,
+      "type": "constant",
+      "value": "recentList.parentElement;"
+    },
+    {
+      "name": "emptyState",
+      "line": 5198,
+      "type": "constant",
+      "value": "recentContainer.querySelector(\".empty\");"
+    },
+    {
+      "name": "songData",
+      "line": 5229,
+      "type": "constant",
+      "value": "JSON.parse(item.dataset.song);"
+    },
+    {
+      "name": "playBtn",
+      "line": 5230,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "queueBtn",
+      "line": 5232,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "el",
+      "line": 5252,
+      "type": "constant",
+      "value": "$byId(IDS.musicPlayer);"
+    },
+    {
+      "name": "y",
+      "line": 5254,
+      "type": "constant",
+      "value": "e.touches ? e.touches[0].clientY : e.clientY;"
+    },
+    {
+      "name": "el",
+      "line": 5262,
+      "type": "constant",
+      "value": "$byId(IDS.musicPlayer);"
+    },
+    {
+      "name": "y",
+      "line": 5264,
+      "type": "constant",
+      "value": "e.touches ? e.touches[0].clientY : e.clientY;"
+    },
+    {
+      "name": "delta",
+      "line": 5265,
+      "type": "constant",
+      "value": "Math.max(0, y - this.dragState.startY);"
+    },
+    {
+      "name": "el",
+      "line": 5272,
+      "type": "constant",
+      "value": "$byId(IDS.musicPlayer);"
+    },
+    {
+      "name": "current",
+      "line": 5274,
+      "type": "constant",
+      "value": "parseFloat((el.style.transform.match(/translateY\\(([-\\d.]+)px\\)/) || [0, 0])[1]);"
+    },
+    {
+      "name": "handle",
+      "line": 5284,
+      "type": "constant",
+      "value": "$byId(\"mpHandle\");"
+    },
+    {
+      "name": "musicPlayer",
+      "line": 5298,
+      "type": "object",
+      "value": "{"
+    },
+    {
+      "name": "drawer",
+      "line": 5300,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "drawer",
+      "line": 5309,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "drawer",
+      "line": 5317,
+      "type": "constant",
+      "value": "document.querySelector('.drawer');"
+    },
+    {
+      "name": "queueList",
+      "line": 5350,
+      "type": "constant",
+      "value": "document.getElementById('queueList');"
+    },
+    {
+      "name": "queueContainer",
+      "line": 5353,
+      "type": "constant",
+      "value": "queueList.closest('.contentSection');"
+    },
+    {
+      "name": "emptyState",
+      "line": 5354,
+      "type": "constant",
+      "value": "queueContainer.querySelector('.emptyState');"
+    },
+    {
+      "name": "index",
+      "line": 5390,
+      "type": "constant",
+      "value": "parseInt(item.dataset.index);"
+    },
+    {
+      "name": "playBtn",
+      "line": 5391,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "removeBtn",
+      "line": 5397,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "recentList",
+      "line": 5410,
+      "type": "constant",
+      "value": "document.getElementById('recentList');"
+    },
+    {
+      "name": "recentContainer",
+      "line": 5413,
+      "type": "constant",
+      "value": "recentList.closest('.contentSection');"
+    },
+    {
+      "name": "emptyState",
+      "line": 5414,
+      "type": "constant",
+      "value": "recentContainer.querySelector('.emptyState');"
+    },
+    {
+      "name": "songData",
+      "line": 5450,
+      "type": "constant",
+      "value": "JSON.parse(item.dataset.song);"
+    },
+    {
+      "name": "playBtn",
+      "line": 5451,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "queueBtn",
+      "line": 5457,
+      "type": "constant",
+      "value": "item.querySelector('[data-action"
+    },
+    {
+      "name": "tabName",
+      "line": 5477,
+      "type": "constant",
+      "value": "btn.dataset.tab;"
+    }
+  ],
+  "objects": [],
+  "classes": [
+    {
+      "name": "AppState",
+      "line": 15,
+      "type": "class"
+    }
+  ],
+  "functions": [
+    {
+      "name": "touchStart",
+      "line": 4197,
+      "type": "function"
+    },
+    {
+      "name": "touchEnd",
+      "line": 4202,
+      "type": "function"
+    },
+    {
+      "name": "frame",
+      "line": 4230,
+      "type": "function"
+    }
+  ],
+  "imports": [
+    {
+      "name": "import { IDS, CLASSES, ROUTES, THEMES, STORAGE_KEYS, ICONS, AUDIO_FORMATS, REPEAT_MODES, NOTIFICATION_TYPES, $, $byId } from \"./map.js\";",
+      "line": 1,
+      "type": "import"
+    },
+    {
+      "name": "import { music } from \"../modules/library.js\";",
+      "line": 2,
+      "type": "import"
+    },
+    {
+      "name": "import { render, create } from \"./utilities/templates.js\";",
+      "line": 3,
+      "type": "import"
+    },
+    {
+      "name": "import { encodeURIComponent } from './utilities/parsers.js';",
+      "line": 4,
+      "type": "import"
+    }
+  ],
+  "totalLines": 5494
+}

@@ -21,16 +21,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #3b82f6;
-            --primary-dark: #1d4ed8;
-            --secondary: #64748b;
-            --accent: #10b981;
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-tertiary: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --border: #334155;
+            /* GitHub Dark Dimmed Color Scheme */
+            --primary: #539bf5;
+            --primary-dark: #316dca;
+            --secondary: #768390;
+            --accent: #3fb950;
+            --bg-primary: #22272e;
+            --bg-secondary: #2d333b;
+            --bg-tertiary: #373e47;
+            --text-primary: #adbac7;
+            --text-secondary: #768390;
+            --border: #444c56;
+            --border-muted: #373e47;
+            --code-bg: #2d333b;
+            --code-border: #444c56;
         }
 
         * {
@@ -46,8 +50,8 @@
         }
 
         .code-block {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
             border-radius: 0.75rem;
         }
 
@@ -248,10 +252,7 @@
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                     </div>
 
-                    <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">
-                        <i class="fas fa-moon"></i>
-                    </button>
+                    <!-- Removed theme toggle - using GitHub Dark Dimmed theme only -->
 
                     <!-- Menu -->
                     <div class="relative">

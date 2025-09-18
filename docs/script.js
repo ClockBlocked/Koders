@@ -101,211 +101,448 @@ class DocsApp {
     }
 
     parseCodeStructure() {
+        // Real parsed structure from global.js (5,493 lines)
         return {
-            ACTION_GRID_ITEMS: {
-                type: 'array',
-                description: 'Configuration array for action grid items in the UI',
-                example: `const ACTION_GRID_ITEMS = [
-  { id: 'play-next', icon: 'M9 5l7 7-7 7M15 5v14', label: 'Play Next' },
-  { id: 'add-queue', icon: 'M12 6v6m0 0v6m0-6h6m-6 0H6', label: 'Add to Queue' }
-];`
-            },
-            AppState: {
-                type: 'class',
-                description: 'Main application state management class that handles all global state',
-                methods: {
-                    constructor: {
-                        type: 'function',
-                        description: 'Initializes the application state with default values',
-                        parameters: [],
-                        returns: 'void',
-                        example: 'const appState = new AppState();'
-                    }
-                },
-                properties: {
-                    audio: { type: 'HTMLAudioElement', description: 'HTML audio element for music playback' },
-                    currentSong: { type: 'Object', description: 'Currently playing song object with metadata' },
-                    isPlaying: { type: 'boolean', description: 'Current playback state (true/false)' },
-                    favorites: { type: 'Object', description: 'User favorites management system' },
-                    queue: { type: 'Object', description: 'Music queue management system' }
-                },
-                example: `class AppState {
-  constructor() {
-    this.audio = null;
-    this.currentSong = null;
-    this.isPlaying = false;
-    this.favorites = {
-      songs: new Set(),
-      artists: new Set(),
-      albums: new Set()
-    };
-  }
-}`
-            },
-            utils: {
-                type: 'object',
-                description: 'Utility functions for common operations throughout the application',
-                methods: {
-                    formatTime: {
-                        type: 'function',
-                        description: 'Formats seconds into MM:SS format for display',
-                        parameters: ['seconds: number'],
-                        returns: 'string',
-                        example: 'utils.formatTime(125) // "2:05"'
+            "utils": {
+                "type": "object",
+                "line": 149,
+                "description": "Utility functions for common operations throughout the application",
+                "methods": {
+                    "formatTime": {
+                        "type": "function",
+                        "description": "Formats seconds into MM:SS format for display",
+                        "parameters": ["seconds: number"],
+                        "returns": "string",
+                        "example": "utils.formatTime(125) // \"2:05\""
                     },
-                    normalizeForUrl: {
-                        type: 'function',
-                        description: 'Normalizes text for URL usage by removing special characters',
-                        parameters: ['text: string'],
-                        returns: 'string',
-                        example: 'utils.normalizeForUrl("The Beatles!") // "thebeatles"'
+                    "normalizeForUrl": {
+                        "type": "function",
+                        "description": "Normalizes text for URL usage by removing special characters",
+                        "parameters": ["text: string"],
+                        "returns": "string",
+                        "example": "utils.normalizeForUrl(\"The Beatles!\") // \"thebeatles\""
                     },
-                    getAlbumImageUrl: {
-                        type: 'function',
-                        description: 'Generates album cover image URL from album name',
-                        parameters: ['albumName: string'],
-                        returns: 'string',
-                        example: 'utils.getAlbumImageUrl("Abbey Road") // URL string'
+                    "getAlbumImageUrl": {
+                        "type": "function",
+                        "description": "Generates album cover image URL from album name",
+                        "parameters": ["albumName: string"],
+                        "returns": "string",
+                        "example": "utils.getAlbumImageUrl(\"Abbey Road\") // URL string"
+                    },
+                    "getArtistImageUrl": {
+                        "type": "function",
+                        "description": "Generates artist portrait image URL from artist name",
+                        "parameters": ["artistName: string"],
+                        "returns": "string"
                     }
                 }
             },
-            player: {
-                type: 'object',
-                description: 'Core music player functionality with audio management',
-                methods: {
-                    playSong: {
-                        type: 'async function',
-                        description: 'Plays a song with full loading, UI updates, and error handling',
-                        parameters: ['songData: Object'],
-                        returns: 'Promise<void>',
-                        example: `await player.playSong({
+            "theme": {
+                "type": "object",
+                "line": 242,
+                "description": "Theme management system for switching between dark, dim, and light themes",
+                "methods": {
+                    "get": {
+                        "type": "function",
+                        "description": "Gets the current active theme",
+                        "returns": "string",
+                        "example": "const currentTheme = theme.get(); // \"dark\", \"dim\", or \"light\""
+                    },
+                    "set": {
+                        "type": "function",
+                        "description": "Sets the application theme and saves preference",
+                        "parameters": ["theme: string"],
+                        "returns": "void"
+                    },
+                    "toggle": {
+                        "type": "function",
+                        "description": "Cycles through available themes",
+                        "returns": "void"
+                    }
+                }
+            },
+            "loadingBar": {
+                "type": "object",
+                "line": 268,
+                "description": "Loading bar animation and progress tracking system",
+                "methods": {
+                    "initialize": {
+                        "type": "function",
+                        "description": "Initializes the loading bar animation system"
+                    },
+                    "animate": {
+                        "type": "function",
+                        "description": "Animates the loading bar with random steps"
+                    }
+                }
+            },
+            "pageUpdates": {
+                "type": "object",
+                "line": 332,
+                "description": "Page content updates and dynamic breadcrumb management",
+                "methods": {
+                    "updateBreadcrumbs": {
+                        "type": "function",
+                        "description": "Updates breadcrumb navigation dynamically"
+                    }
+                }
+            },
+            "overlays": {
+                "type": "object",
+                "line": 507,
+                "description": "Modal dialogs and overlay management system",
+                "methods": {
+                    "show": {
+                        "type": "function",
+                        "description": "Shows a modal overlay"
+                    },
+                    "hide": {
+                        "type": "function",
+                        "description": "Hides modal overlays"
+                    }
+                }
+            },
+            "musicPlayer": {
+                "type": "object",
+                "line": 5298,
+                "description": "Music player UI controls and interaction handling",
+                "methods": {
+                    "show": {
+                        "type": "function",
+                        "description": "Shows the music player drawer"
+                    },
+                    "hide": {
+                        "type": "function",
+                        "description": "Hides the music player drawer"
+                    },
+                    "updateQueue": {
+                        "type": "function",
+                        "description": "Updates the music queue display"
+                    }
+                }
+            },
+            "siteMap": {
+                "type": "object",
+                "line": 1015,
+                "description": "Application routing and navigation management",
+                "methods": {
+                    "initialize": {
+                        "type": "function",
+                        "description": "Initializes the routing system"
+                    },
+                    "loadHomePage": {
+                        "type": "function",
+                        "description": "Loads the home page content"
+                    },
+                    "loadArtistPage": {
+                        "type": "function",
+                        "description": "Loads artist page content"
+                    }
+                }
+            },
+            "homePage": {
+                "type": "object",
+                "line": 1993,
+                "description": "Home page content management and rendering",
+                "methods": {
+                    "loadContent": {
+                        "type": "function",
+                        "description": "Loads and renders home page content"
+                    },
+                    "updateRecentlyPlayed": {
+                        "type": "function",
+                        "description": "Updates recently played section"
+                    }
+                }
+            },
+            "storage": {
+                "type": "object",
+                "line": 2814,
+                "description": "Local storage management for user preferences and data",
+                "methods": {
+                    "save": {
+                        "type": "function",
+                        "description": "Saves data to localStorage",
+                        "parameters": ["key: string", "data: any"]
+                    },
+                    "load": {
+                        "type": "function",
+                        "description": "Loads data from localStorage",
+                        "parameters": ["key: string"],
+                        "returns": "any"
+                    }
+                }
+            },
+            "mediaSession": {
+                "type": "object",
+                "line": 2868,
+                "description": "Browser media session API integration for system controls",
+                "methods": {
+                    "update": {
+                        "type": "function",
+                        "description": "Updates media session metadata"
+                    }
+                }
+            },
+            "player": {
+                "type": "object",
+                "line": 2926,
+                "description": "Core music player functionality with audio management",
+                "methods": {
+                    "playSong": {
+                        "type": "async function",
+                        "description": "Plays a song with full loading, UI updates, and error handling",
+                        "parameters": ["songData: Object"],
+                        "returns": "Promise<void>",
+                        "example": `await player.playSong({
   id: "song-123",
   title: "Song Title",
   artist: "Artist Name",
   album: "Album Name"
 });`
                     },
-                    toggle: {
-                        type: 'function',
-                        description: 'Toggles between play and pause states',
-                        returns: 'void',
-                        example: 'player.toggle(); // Plays if paused, pauses if playing'
+                    "toggle": {
+                        "type": "function",
+                        "description": "Toggles between play and pause states",
+                        "returns": "void",
+                        "example": "player.toggle(); // Plays if paused, pauses if playing"
                     },
-                    initialize: {
-                        type: 'function',
-                        description: 'Initializes the audio player and binds events',
-                        returns: 'void'
+                    "getNextInAlbum": {
+                        "type": "function",
+                        "description": "Gets the next song in current album",
+                        "returns": "Object|null"
+                    },
+                    "getPreviousInAlbum": {
+                        "type": "function",
+                        "description": "Gets the previous song in current album",
+                        "returns": "Object|null"
                     }
                 }
             },
-            controls: {
-                type: 'object',
-                description: 'Player control functions for playback management',
-                methods: {
-                    play: {
-                        type: 'function',
-                        description: 'Starts audio playback',
-                        returns: 'void',
-                        example: 'controls.play();'
+            "controls": {
+                "type": "object",
+                "line": 3115,
+                "description": "Music player control buttons and interactions",
+                "methods": {
+                    "next": {
+                        "type": "function",
+                        "description": "Skip to next song in queue or album",
+                        "returns": "void",
+                        "example": "controls.next();"
                     },
-                    pause: {
-                        type: 'function',
-                        description: 'Pauses audio playback',
-                        returns: 'void',
-                        example: 'controls.pause();'
+                    "previous": {
+                        "type": "function",
+                        "description": "Go to previous song or restart current",
+                        "returns": "void",
+                        "example": "controls.previous();"
                     },
-                    next: {
-                        type: 'function',
-                        description: 'Skips to next track in queue or album',
-                        returns: 'void',
-                        example: 'controls.next();'
+                    "seek": {
+                        "type": "function",
+                        "description": "Seek to specific time position",
+                        "parameters": ["time: number"],
+                        "returns": "void"
                     },
-                    previous: {
-                        type: 'function',
-                        description: 'Goes to previous track or restarts current',
-                        returns: 'void',
-                        example: 'controls.previous();'
-                    }
-                },
-                properties: {
-                    shuffle: {
-                        type: 'object',
-                        description: 'Shuffle control methods',
-                        methods: {
-                            toggle: {
-                                type: 'function',
-                                description: 'Toggles shuffle mode on/off',
-                                returns: 'void'
-                            }
-                        }
+                    "skip": {
+                        "type": "function",
+                        "description": "Skip forward/backward by seconds",
+                        "parameters": ["seconds: number"],
+                        "returns": "void"
                     }
                 }
             },
-            notifications: {
-                type: 'object',
-                description: 'Advanced toast notification system with animations',
-                methods: {
-                    show: {
-                        type: 'function',
-                        description: 'Shows a toast notification with type, duration, and undo support',
-                        parameters: ['message: string', 'type: string', 'undoCallback: function', 'options: Object'],
-                        returns: 'HTMLElement',
-                        example: `notifications.show("Success!", "success");
+            "ui": {
+                "type": "object",
+                "line": 3232,
+                "description": "User interface updates and state management",
+                "methods": {
+                    "updateNowPlaying": {
+                        "type": "function",
+                        "description": "Updates now playing display with current song info",
+                        "returns": "void"
+                    },
+                    "updatePlayPauseButtons": {
+                        "type": "function",
+                        "description": "Updates play/pause button states across the UI",
+                        "returns": "void"
+                    },
+                    "updateProgress": {
+                        "type": "function",
+                        "description": "Updates progress bar and time display",
+                        "returns": "void"
+                    },
+                    "updateFavoriteButton": {
+                        "type": "function",
+                        "description": "Updates favorite button state for current song",
+                        "returns": "void"
+                    }
+                }
+            },
+            "dropdown": {
+                "type": "object",
+                "line": 3378,
+                "description": "Dropdown menu management and interactions",
+                "methods": {
+                    "toggle": {
+                        "type": "function",
+                        "description": "Toggles dropdown menu visibility"
+                    },
+                    "show": {
+                        "type": "function",
+                        "description": "Shows dropdown menu"
+                    },
+                    "hide": {
+                        "type": "function",
+                        "description": "Hides dropdown menu"
+                    }
+                }
+            },
+            "playlists": {
+                "type": "object",
+                "line": 3423,
+                "description": "Playlist creation, management, and manipulation",
+                "methods": {
+                    "create": {
+                        "type": "async function",
+                        "description": "Shows prompt to create new playlist and adds it to user's collection",
+                        "returns": "Promise<Object|null>",
+                        "example": "const playlist = await playlists.create();"
+                    },
+                    "addSong": {
+                        "type": "function",
+                        "description": "Adds a song to an existing playlist",
+                        "parameters": ["playlistId: string", "song: Object"],
+                        "returns": "boolean"
+                    },
+                    "removeSong": {
+                        "type": "function",
+                        "description": "Removes a song from a playlist",
+                        "parameters": ["playlistId: string", "songIndex: number"],
+                        "returns": "boolean"
+                    },
+                    "delete": {
+                        "type": "async function",
+                        "description": "Deletes a playlist after user confirmation",
+                        "parameters": ["playlistId: string"],
+                        "returns": "Promise<boolean>"
+                    }
+                }
+            },
+            "views": {
+                "type": "object",
+                "line": 3891,
+                "description": "Different view states and content rendering",
+                "methods": {
+                    "showFavoriteSongs": {
+                        "type": "function",
+                        "description": "Shows favorite songs view"
+                    },
+                    "showFavoriteArtists": {
+                        "type": "function",
+                        "description": "Shows favorite artists view"
+                    }
+                }
+            },
+            "notifications": {
+                "type": "object",
+                "line": 4067,
+                "description": "Advanced toast notification system with animations and undo support",
+                "methods": {
+                    "show": {
+                        "type": "function",
+                        "description": "Shows a toast notification with type, duration, and undo support",
+                        "parameters": ["message: string", "type: string", "undoCallback: function", "options: Object"],
+                        "returns": "HTMLElement",
+                        "example": `notifications.show("Success!", "success");
 notifications.show("Deleted", "warning", () => undo());`
                     },
-                    initialize: {
-                        type: 'function',
-                        description: 'Initializes the notification system',
-                        returns: 'void'
+                    "createTimerController": {
+                        "type": "function",
+                        "description": "Creates notification timer controller for precise timing",
+                        "returns": "Object"
                     }
                 }
             },
-            playlists: {
-                type: 'object',
-                description: 'Comprehensive playlist management system',
-                methods: {
-                    create: {
-                        type: 'async function',
-                        description: 'Shows prompt to create new playlist',
-                        returns: 'Promise<Object|null>',
-                        example: 'const playlist = await playlists.create();'
-                    },
-                    add: {
-                        type: 'function',
-                        description: 'Creates a new playlist with the given name',
-                        parameters: ['name: string'],
-                        returns: 'Object|null'
-                    },
-                    addSong: {
-                        type: 'function',
-                        description: 'Adds a song to an existing playlist',
-                        parameters: ['playlistId: string', 'song: Object'],
-                        returns: 'boolean'
-                    }
-                }
+            "ACTION_GRID_ITEMS": {
+                "type": "array",
+                "line": 6,
+                "description": "Configuration array for action grid items in the UI",
+                "example": `const ACTION_GRID_ITEMS = [
+  { id: 'play-next', icon: 'M9 5l7 7-7 7M15 5v14', label: 'Play Next' },
+  { id: 'add-queue', icon: 'M12 6v6m0 0v6m0-6h6m-6 0H6', label: 'Add to Queue' },
+  { id: 'add-playlist', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2v2M7 7h10', label: 'Add to Playlist' },
+  { id: 'share', icon: 'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z', label: 'Share' },
+  { id: 'download', icon: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4', label: 'Download' },
+  { id: 'view-artist', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', label: 'View Artist' }
+];`
             },
-            theme: {
-                type: 'object',
-                description: 'Theme management system for switching between dark, dim, and light themes',
-                methods: {
-                    get: {
-                        type: 'function',
-                        description: 'Gets the current active theme',
-                        returns: 'string',
-                        example: 'const theme = theme.get(); // "dark", "dim", or "light"'
-                    },
-                    set: {
-                        type: 'function',
-                        description: 'Sets the application theme and saves preference',
-                        parameters: ['theme: string'],
-                        returns: 'void'
-                    },
-                    toggle: {
-                        type: 'function',
-                        description: 'Cycles through available themes',
-                        returns: 'void'
+            "AppState": {
+                "type": "class",
+                "line": 15,
+                "description": "Main application state management class that handles all global state",
+                "methods": {
+                    "constructor": {
+                        "type": "function",
+                        "description": "Initializes the application state with default values",
+                        "parameters": [],
+                        "returns": "void",
+                        "example": "const appState = new AppState();"
                     }
-                }
+                },
+                "properties": {
+                    "audio": { "type": "HTMLAudioElement", "description": "HTML audio element for music playback" },
+                    "currentSong": { "type": "Object", "description": "Currently playing song object with metadata" },
+                    "currentArtist": { "type": "string", "description": "Currently playing artist name" },
+                    "currentAlbum": { "type": "string", "description": "Currently playing album name" },
+                    "isPlaying": { "type": "boolean", "description": "Current playback state (true/false)" },
+                    "duration": { "type": "number", "description": "Duration of current song in seconds" },
+                    "recentlyPlayed": { "type": "Array", "description": "Array of recently played songs" },
+                    "isDragging": { "type": "boolean", "description": "Whether user is dragging progress bar" },
+                    "shuffleMode": { "type": "boolean", "description": "Whether shuffle mode is enabled" },
+                    "repeatMode": { "type": "string", "description": "Current repeat mode (off, one, all)" },
+                    "currentIndex": { "type": "number", "description": "Current song index in album" },
+                    "playlists": { "type": "Array", "description": "User's playlists collection" },
+                    "favorites": { "type": "Object", "description": "User favorites management system with sets for songs, artists, albums" },
+                    "queue": { "type": "Object", "description": "Music queue management system with add/remove methods" }
+                },
+                "example": `class AppState {
+  constructor() {
+    this.audio = null;
+    this.currentSong = null;
+    this.currentArtist = null;
+    this.currentAlbum = null;
+    this.isPlaying = false;
+    this.duration = 0;
+    this.recentlyPlayed = [];
+    this.isDragging = false;
+    this.shuffleMode = false;
+    this.repeatMode = REPEAT_MODES.OFF;
+    this.currentIndex = 0;
+    this.playlists = [];
+    this.favorites = {
+      songs: new Set(),
+      artists: new Set(), 
+      albums: new Set()
+    };
+    this.queue = {
+      items: []
+    };
+  }
+}`
+            },
+            "touchStart": {
+                "type": "function",
+                "line": 4197,
+                "description": "Touch start event handler for mobile interactions"
+            },
+            "touchEnd": {
+                "type": "function",
+                "line": 4202,
+                "description": "Touch end event handler for mobile interactions"
+            },
+            "frame": {
+                "type": "function",
+                "line": 4230,
+                "description": "Animation frame function for smooth UI updates"
             }
         };
     }
@@ -547,13 +784,7 @@ notifications.show("Deleted", "warning", () => undo());`
             });
         }
 
-        // Theme toggle
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        }
+        // Theme toggle removed - using GitHub Dark Dimmed theme only
 
         // Menu toggle
         const menuToggle = document.getElementById('menu-toggle');
@@ -718,13 +949,8 @@ notifications.show("Deleted", "warning", () => undo());`
     }
 
     setupTheme() {
-        const savedTheme = localStorage.getItem('docs-theme') || 'dark';
-        document.documentElement.className = savedTheme;
-        
-        const themeIcon = document.querySelector('#theme-toggle i');
-        if (themeIcon) {
-            themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        }
+        // Force GitHub Dark Dimmed theme only
+        document.documentElement.className = 'dark github-dimmed';
     }
 
     setupAccessibility() {
@@ -745,34 +971,14 @@ notifications.show("Deleted", "warning", () => undo());`
         });
     }
 
-    toggleTheme() {
-        const html = document.documentElement;
-        const isDark = html.classList.contains('dark');
-        
-        if (isDark) {
-            html.classList.remove('dark');
-            html.classList.add('light');
-            localStorage.setItem('docs-theme', 'light');
-        } else {
-            html.classList.remove('light');
-            html.classList.add('dark');
-            localStorage.setItem('docs-theme', 'dark');
-        }
-        
-        const icon = document.querySelector('#theme-toggle i');
-        if (icon) {
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-        
-        this.showToast(`Switched to ${isDark ? 'light' : 'dark'} theme`, 'info');
-    }
+    // Theme toggle removed - using GitHub Dark Dimmed theme only
 
     updateStats() {
         const stats = {
             objects: 0,
             functions: 0,
             properties: 0,
-            lines: 2847
+            lines: 5493
         };
 
         this.searchIndex.forEach(item => {
