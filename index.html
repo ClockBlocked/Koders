@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en" class="dim" data-theme="dim">
+<head>
+
+<!-- Debugging Script -->
+
+<!-- 
+<script>
+(() => {
+  const globalObj = (typeof window !== "undefined" ? window : globalThis);
+
+  const DebugSuite = {
+    config: {
+      verbose: false,
+      maxNodeHTML: 240,
+      showHighlights: true,
+      highlightColor: "rgba(255,20,20,0.35)",
+      auditOnDOMContentLoaded: true,
+      auditAgainAfter: 1500,   // re-audit shortly after first pass for late DOM
+    },
+    state: {
+      errors: [],
+      listenerMap: new WeakMap(),     // original -> wrapped
+      reverseMap: new WeakMap(),      // wrapped -> original
+      bindings: [],                   // {target, type, wrapped, original, options, at}
+      missingIds: new Set(),
+      nullQueries: [],
+      addEventListenerPatched: false,
+      removeEventListenerPatched: false,
+    },
+
+    now() { return new Date().toISOString(); },
+
+    cssPath(node) {
+      try {
+        if (!(node instanceof Element)) return "<non-element>";
+        const parts = [];
+        while (node && node.nodeType === 1 && parts.length < 10) {
+          const id = node.id ? `#${node.id}` : "";
+          const cls = node.className && typeof node.className === "string"
+            ? "." + node.className.trim().split(/\s+/).slice(0,3).join(".")
+            : "";
+          parts.unshift(node.tagName.toLowerCase() + id + cls);
+          if (id) break;
+          node = node.parentElement;
+        }
+        return parts.join(" > ");
+      } catch { return "<path-error>"; }
+    },
+
+    briefHTML(el) {
+      try {
+        if (!(el instanceof Element)) return String(el);
+        const html = el.outerHTML || el.innerHTML || "";
+        return html.replace(/\s+/g, " ").trim().slice(0, this.config.maxNodeHTML);
+      } catch { return "<html-snapshot-error>"; }
+    },
+
+    log(...args){ console.log("%c[DebugSuite]", "color:#0af", ...args); },
+    warn(...args){ console.warn("%c[DebugSuite]", "color:#f90", ...args); },
+    error(...args){ console.error("%c[DebugSuite]", "color:#f33", ...args); },
+
+    enableVerbose(){ this.config.verbose = true; this.log("Verbose mode enabled."); },
+    disableVerbose(){ this.config.verbose = false; this.log("Verbose mode disabled."); },
+
+    // --- Global Error Traps ---
+    installGlobalTraps(){
+      globalObj.addEventListener("error", (e) => {
+        const info = {
+          kind: "error",
+          at: this.now(),
+          message: e.message,
+          file: e.filename,
+          line: e.lineno,
+          col: e.colno,
+          error: e.error && (e.error.stack || e.error.toString()),
+        };
+        this.state.errors.push(info);
+        this.error("Unhandled Error:", info);
+      });
+
+      globalObj.addEventListener("unhandledrejection", (e) => {
+        const reason = e.reason;
+        const info = {
+          kind: "unhandledrejection",
+          at: this.now(),
+          message: (reason && (reason.message || reason.toString())) || String(reason),
+          stack: reason && reason.stack,
+        };
+        this.state.errors.push(info);
+        this.error("Unhandled Promise Rejection:", info);
+      });
+    },
+
+    // --- Patch add/removeEventListener to wrap handlers with try/catch ---
+    patchEventListeners(){
+      if (this.state.addEventListenerPatched) return;
+      const proto = EventTarget.prototype;
+      const origAdd = proto.addEventListener;
+      const origRemove = proto.removeEventListener;
+
+      const wrap = (target, type, listener) => {
+        if (typeof listener !== "function") return listener;
+        const that = this;
+
+        if (that.state.listenerMap.has(listener)) {
+          return that.state.listenerMap.get(listener); // already wrapped
+        }
+
+        const wrapped = function(ev){
+          try {
+            return listener.call(this, ev);
+          } catch (err) {
+            const info = {
+              kind: "handler-exception",
+              at: that.now(),
+              eventType: ev && ev.type,
+              targetPath: that.cssPath(ev && ev.target),
+              currentTargetPath: that.cssPath(ev && ev.currentTarget),
+              elementHTML: that.briefHTML(ev && ev.currentTarget),
+              errorMessage: err && (err.message || String(err)),
+              stack: err && err.stack,
+            };
+            that.state.errors.push(info);
+            that.error(`Listener error for "${type}" on`, target, "→", info);
+            throw err; // keep original behavior
+          }
+        };
+
+        that.state.listenerMap.set(listener, wrapped);
+        that.state.reverseMap.set(wrapped, listener);
+        return wrapped;
+      };
+
+      proto.addEventListener = function(type, listener, options){
+        const wrapped = wrap(this, type, listener);
+        const result = origAdd.call(this, type, wrapped, options);
+        DebugSuite.state.bindings.push({
+          target: this,
+          type,
+          wrapped,
+          original: listener,
+          options,
+          at: DebugSuite.now(),
+        });
+        if (DebugSuite.config.verbose) {
+          DebugSuite.log("Bound", type, "to", DebugSuite.cssPath(this), {options});
+        }
+        return result;
+      };
+
+      proto.removeEventListener = function(type, listener, options){
+        const mapped = DebugSuite.state.listenerMap.get(listener) || listener;
+        return origRemove.call(this, type, mapped, options);
+      };
+
+      this.state.addEventListenerPatched = true;
+      this.state.removeEventListenerPatched = true;
+      this.log("Event listener patch installed.");
+    },
+
+    // --- Monitor common null lookups via IDS map ---
+    auditIDsPresence(){
+      const IDS = globalObj.IDS || {};
+      const missing = [];
+      Object.keys(IDS).forEach((key) => {
+        const id = IDS[key];
+        const el = document.getElementById(id);
+        if (!el) {
+          this.state.missingIds.add(id);
+          missing.push({ key, id });
+        }
+      });
+
+      if (missing.length) {
+        this.warn(`Missing ${missing.length} expected element(s) from IDS:`, missing);
+        if (this.config.showHighlights) this.highlightMissing();
+      } else {
+        this.log("All IDS elements present at audit time.");
+      }
+      return missing;
+    },
+
+    highlightMissing(){
+      const list = Array.from(this.state.missingIds);
+      if (!list.length) return;
+      // Create a non-blocking HUD listing missing IDs
+      const idList = list.join(", ");
+      this.warn("Missing elements (by ID):", idList);
+      // Also attempt to find near-misses by partial match
+      list.forEach((id) => {
+        // try best-effort suggestions by case-insensitive contains:
+        const guess = Array.from(document.querySelectorAll(`[id*="${CSS.escape(id)}" i]`));
+        if (guess.length) {
+          this.log(`Close matches for #${id}:`, guess.map(g => `#${g.id}`));
+        }
+      });
+    },
+
+    // Quick sanity checks for your major controllers/objects from global.js
+    auditControllers(){
+      const suspects = ["appState","player","controls","ui","popup","dropdown","theme","notifications","playlists"];
+      const results = {};
+      suspects.forEach((name) => {
+        const obj = globalObj[name];
+        results[name] = {
+          present: !!obj,
+          type: typeof obj,
+          keys: obj ? Object.keys(obj).slice(0, 20) : [],
+        };
+      });
+      this.log("Controller audit:", results);
+
+      // Drawer openability (music player)
+      const IDS = globalObj.IDS || {};
+      const CLASSES = globalObj.CLASSES || {};
+      const musicPlayer = IDS && document.getElementById(IDS.musicPlayer);
+      if (!musicPlayer) {
+        this.warn("Music Player element missing:", { id: IDS && IDS.musicPlayer });
+      } else {
+        // Check class mutation behavior
+        const canOpen = !!(globalObj.popup && typeof globalObj.popup.open === "function");
+        this.log("Drawer presence:", { id: IDS.musicPlayer, canOpen });
+      }
+    },
+
+    // Summaries
+    report(){
+      const idMissing = Array.from(this.state.missingIds);
+      const byType = {};
+      for (const b of this.state.bindings) {
+        byType[b.type] = (byType[b.type] || 0) + 1;
+      }
+      const summary = {
+        timestamp: this.now(),
+        totalListenerBindings: this.state.bindings.length,
+        bindingsByEventType: byType,
+        totalErrors: this.state.errors.length,
+        missingIds: idMissing,
+        recentErrors: this.state.errors.slice(-10),
+        nullQueries: this.state.nullQueries.slice(-10),
+      };
+      this.log("Report:", summary);
+      return summary;
+    },
+
+    // Helper to safely get element by id and track nulls (use in console if needed)
+    safeById(id){
+      const el = document.getElementById(id);
+      if (!el) {
+        const info = { at: this.now(), id };
+        this.state.nullQueries.push(info);
+        this.warn("Null lookup:", info);
+      }
+      return el;
+    },
+
+    // Full run: patch → (later) audit
+    runAll(){
+      this.patchEventListeners();
+      this.installGlobalTraps();
+
+      const doAudit = () => {
+        try {
+          this.auditIDsPresence();
+          this.auditControllers();
+          this.report();
+        } catch (e) {
+          this.error("Audit failure:", e);
+        }
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          doAudit();
+          setTimeout(() => doAudit(), this.config.auditAgainAfter);
+        }, { once: true });
+      } else {
+        doAudit();
+        setTimeout(() => doAudit(), this.config.auditAgainAfter);
+      }
+
+      this.log("DebugSuite is active. Use DebugSuite.report(), DebugSuite.enableVerbose().");
+    }
+  };
+
+  // Expose globally
+  globalObj.DebugSuite = DebugSuite;
+
+  // Auto-run
+  DebugSuite.runAll();
+})();
+</script>  
+-->
+  
+    <!-- Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyBeats™</title>
+    <meta name="description" content="Stream & share your favourite music for free." />
+    <meta name="keywords" content="music, player, web, audio, streaming, playlist, songs, albums, artists, videos, sharing, media, radio, pop, hiphop, country, dance, party, dubstep, alternative, rock, free, forever" />
+    <meta name="author" content="ClockBlocked" />
+    <meta name="theme-color" content="#1f2329" />
+
+    <!-- SEO Meta Tags -->
+    <meta property="og:title" content="MyBeats™ - Stream & Share Music" />
+    <meta property="og:description" content="A sleek and modern web-based music player." />
+    <meta property="og:image" content="thumbnail.jpg" />
+    <meta property="og:url" content="https://koders.cloud" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MyBeats™ - Stream & Share Music" />
+    <meta name="twitter:description" content="A sleek and modern web-based music player." />
+    <meta name="twitter:image" content="thumbnail.jpg" />
+
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="./system/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+    <!-- Assets -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    
+
+    <link rel="stylesheet" href="./overlays.css" />
+    <link rel="stylesheet" href="./extra.css" />
+    
+    <link rel="stylesheet" href="./dynamicOverlays.css" />
+   
+   
+   
+   <link rel="stylesheet" href="./stylingSheets/main.css" />
+   
+   
+    
+   <link rel="stylesheet" href="./stylingSheets/fonts.css" />
+    
+   <link rel="stylesheet" href="./stylingSheets/svg.css" />
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+
+    <!-- Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-P0KCT8TSPW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag("js", new Date());
+      gtag("config", "G-P0KCT8TSPW");
+    </script>
+
+
+</head>
+<body>
+
+
+<!-- Main Page Wrapper ---------------------------------------->
+<div id="pageWrapper" data-label="Outermost container for the whole page">
+
+
+
+<!-- Toast container (optional; JS will create if not present) -->
+<div id="toast-portal"></div>
+
+
+
+
+
+
+<!-- Theme Toggle Component -->
+<div class="theme-toggle-container">
+        <div class="theme-trigger">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121z"/>
+          </svg>
+        </div>
+        <div class="theme-options">
+          <button data-theme="light" aria-label="Light theme">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121z"/>
+            </svg>
+          </button>
+          <button data-theme="dim" aria-label="Dim theme">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M9.822 2.238a9 9 0 0 0 11.94 11.94C20.768 18.654 16.775 22 12 22 6.477 22 2 17.523 2 12c0-4.775 3.346-8.768 7.822-9.762zm8.342.053L19 2.5v1l-.836.209a2 2 0 0 0-1.455 1.455L16.5 6h-1l-.209-.836a2 2 0 0 0-1.455-1.455L13 3.5v-1l.836-.209A2 2 0 0 0 15.291.836L15.5 0h1l.209.836a2 2 0 0 0 1.455 1.455zm5 5L24 7.5v1l-.836.209a2 2 0 0 0-1.455 1.455L21.5 11h-1l-.209-.836a2 2 0 0 0-1.455-1.455L18 8.5v-1l.836-.209a2 2 0 0 0 1.455-1.455L20.5 5h1l.209.836a2 2 0 0 0 1.455 1.455z"/>
+            </svg>
+          </button>
+          <button data-theme="dark" aria-label="Dark theme">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1-8.313-12.454z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+
+
+<!-- Navigation Bar -->
+  <nav
+      id="navbar"
+      class="glass-effect">
+
+  <div class="navbar-content" data-label="All elements within navbar container">
+
+<!--- L E F T --->
+   <div class="navbar-left" data-label="Left container">
+
+<button class="menu-trigger" id="menu-trigger" title="Menu" data-label="DropUp Menu's Open & Close Button">
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+    </svg>
+</button>
+</div>
+
+
+<!--- C E N T E R --->
+   <div class="navbar-center" id="now-playing-area" data-tooltip="Open Now Playing" data-tooltip-placement="top">
+  <div class="nowPlaying" data-label="Opens the Music Player Drawer when clicked">
+
+    <div class="albumArtwork flex items-center justify-center relative">
+      <svg class="w-6 h-6 text-white transition-opacity duration-500 ease-in-out" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.369 4.369 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+      </svg>
+      
+      <img src="" alt="Album Cover" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 ease-in-out" />
+    </div>
+
+    <div class="songInfo">
+      <div class="songName truncate">No song playing</div>
+      <div class="artistName truncate">Select a song to get started</div>
+    </div>
+
+    <div class="play-indicator" id="play-indicator"></div>
+  </div>
+</div>
+
+          <div class="navbar-right">
+            <div class="nav-controls">
+              <button class="previous nav-control-btn" title="Previous Track">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z" />
+                </svg>
+              </button>
+
+              <button class="playPause nav-control-btn play-pause" title="Play/Pause">
+                <svg id="play-icon-navbar" class="play w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                <svg id="pause-icon-navbar" class="pause w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+              </button>
+
+              <button class="next nav-control-btn" title="Next Track">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798L4.555 5.168z" />
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </nav>
+
+<!-- Dropdown Menu -->
+      <div class="dropdown-menu" id="dropdown-menu">
+        <div class="dropdown-header">
+          <h3 class="dropdown-title">Music Library</h3>
+          <button class="dropdown-close" id="dropdown-close">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="dropdown-section">
+          <h4 class="section-title">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+            </svg>
+            Favorites
+          </h4>
+
+          <div class="dropdown-item" id="favorite-songs">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Favorite Songs</div>
+              <div class="dropdown-item-subtitle">Your liked tracks</div>
+            </div>
+            <div class="dropdown-item-badge" id="favorite-songs-count">0</div>
+          </div>
+
+          <div class="dropdown-item" id="favorite-artists">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12a3 3 0 00-3-3H2a1 1 0 100 2h4a1 1 0 011 1v.5a1 1 0 102 0V12zm3-8a3 3 0 100 6 3 3 0 000-6zm-1 4a1 1 0 11-2 0 1 1 0 012 0z" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Favorite Artists</div>
+              <div class="dropdown-item-subtitle">Artists you follow</div>
+            </div>
+            <div class="dropdown-item-badge" id="favorite-artists-count">0</div>
+          </div>
+        </div>
+
+        <div class="dropdown-section">
+          <h4 class="section-title">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+            Library
+          </h4>
+
+          <div class="dropdown-item" id="recently-played">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Recent Plays</div>
+              <div class="dropdown-item-subtitle">Recently played songs</div>
+            </div>
+            <div class="dropdown-item-badge" id="recent-count">0</div>
+          </div>
+
+          <div class="dropdown-item" id="queue-view">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Up Next</div>
+              <div class="dropdown-item-subtitle">Songs in queue</div>
+            </div>
+            <div class="dropdown-item-badge" id="queue-count">0</div>
+          </div>
+        </div>
+
+        <div class="dropdown-section">
+          <h4 class="section-title">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+            Playlists
+          </h4>
+
+          <div class="dropdown-item" id="create-playlist">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Create Playlist</div>
+              <div class="dropdown-item-subtitle">Make a new playlist</div>
+            </div>
+          </div>
+
+          <div id="playlists-list">
+            <div class="empty-state" id="playlists-empty">
+              <div class="empty-state-icon">
+                <svg class="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                </svg>
+              </div>
+              <div class="empty-state-text">
+                No playlists yet.<br />
+                Create your first playlist!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown-section">
+          <h4 class="section-title">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+            </svg>
+            Actions
+          </h4>
+
+          <div class="dropdown-item" id="shuffle-all">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Shuffle All</div>
+              <div class="dropdown-item-subtitle">Play all songs randomly</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown-section">
+          <h4 class="section-title">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+            </svg>
+            Settings
+          </h4>
+
+          <div class="dropdown-item" id="app-settings">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">Preferences</div>
+              <div class="dropdown-item-subtitle">App settings & options</div>
+            </div>
+          </div>
+
+          <div class="dropdown-item" id="about-app">
+            <div class="dropdown-item-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="dropdown-item-content">
+              <div class="dropdown-item-title">About</div>
+              <div class="dropdown-item-subtitle">Version & information</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<aside class="drawer" popover="auto" id="drawer">
+  <div class="drawerScroller">
+    <div class="drawerSlide">
+      <div class="drawerAnchors">
+        <div class="drawerAnchor"></div>
+        <div class="drawerAnchor"></div>
+      </div>
+      
+      <button popovertargetaction="hide" popovertarget="drawer" class="drawerCurtain" tabindex="-1"></button>
+
+      <!-- Tabs positioned outside drawerContent -->
+      <div class="tabsContainer">
+        <div class="tabs">
+          <button class="tab active" data-tab="playing">Now Playing</button>
+          <button class="tab" data-tab="recent">Recent Plays</button>
+          <button class="tab" data-tab="queue">Up Next</button>
+        </div>
+      </div>
+
+      <div class="drawerContent">
+        <div class="mpNav">     
+          <button autofocus class="drawerDrag" popovertargetaction="hide" popovertarget="drawer">
+            <span></span>
+          </button>
+        </div>
+
+        <div class="content">
+          <!-- Your exact music player HTML goes here -->
+          <div class="musicPlayer" id="musicPlayer">
+            <div class="header">
+              <button class="close" id="closeBtn">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="body">
+              <!-- Now Playing -->
+              <div class="content active" data-tab="playing">
+                <img id="cover" src="" alt="Album Cover" class="albumArtwork cover" />
+
+                <div class="info">
+                  <h4 id="title" class="songName title"></h4>
+                  <p id="artist" class="artistName artist"></p>
+                  <p id="album" class="albumName album"></p>
+                </div>
+<style>
+  /* Container & time labels */
+.progress {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 720px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  margin: 0;
+}
+
+.progress .time {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  line-height: 1;
+  color: #6c6c6c;
+}
+
+/* Track (visual base) */
+.progress__track {
+  position: relative;
+  height: 8px;                 /* visual thickness */
+  background-color: #e5e9eb;   /* iOS-like light track */
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: height 120ms ease;
+  outline: none;
+}
+
+/* Larger pointer hit area without changing visuals */
+.progress__track::before {
+  content: "";
+  position: absolute;
+  inset: -10px 0;              /* ~20px vertical padding for touch */
+}
+
+/* Grow a bit on hover/drag for feedback */
+.progress__track:hover,
+.progress__track.is-hovering,
+.progress__track.is-dragging {
+  height: 10px;
+}
+
+/* Buffered portion (behind the elapsed bar) */
+.progress__buffer {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: rgba(0,0,0,0.08);
+  pointer-events: none;
+}
+
+/* Elapsed fill (iOS 7 rainbow gradient) */
+.progress__bar {
+  position: relative;
+  height: 100%;
+  width: 0%;
+  background-image: linear-gradient(to right,
+    #4cd964, #5ac8fa, #007aff, #34aadc, #5856d6, #ff2d55);
+  background-size: 100% 100%;
+  border-radius: inherit;
+  transition: width 140ms linear;
+}
+
+/* iOS-style skewed shadow under the bar */
+.progress__shadow {
+  background-image: linear-gradient(to bottom, #eaecee, transparent);
+  height: 3em;
+  width: 100%;
+  position: absolute;
+  top: 100%;
+  transform: skew(45deg);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* Thumb — positioned by left:% relative to the track */
+.progress__thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.001); /* visually hidden default */
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.35),
+    0 0 0 2px rgba(255,255,255,0.95);
+  transition: transform 120ms ease, opacity 120ms ease;
+  opacity: 0;
+}
+
+/* Make thumb easy to grab without changing look */
+.progress__thumb::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+}
+
+/* Reveal thumb on hover/drag/focus */
+.progress__track:hover .progress__thumb,
+.progress__track.is-hovering .progress__thumb,
+.progress__track.is-dragging .progress__thumb,
+.progress__thumb:focus-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Slight press feedback */
+.progress__track.is-dragging .progress__thumb {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Keyboard focus ring on the track (slider role) */
+.progress__track:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.08), 0 0 0 6px rgba(88,86,214,0.35);
+  border-radius: 999px;
+}
+
+/* Dark mode tinting for base/buffer (optional) */
+@media (prefers-color-scheme: dark) {
+  .progress .time { color: rgba(255,255,255,0.8); }
+  .progress__track { background: rgba(255,255,255,0.14); }
+  .progress__buffer { background: rgba(255,255,255,0.22); }
+}
+</style>
+<div class="progress" id="musicProgress">
+  <div class="time">
+    <span id="currentTime">0:00</span>
+    <span id="totalTime">0:00</span>
+  </div>
+
+  <div class="progress__track" id="progressBar" tabindex="0" role="slider"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+       aria-label="Seek">
+    <div class="progress__buffer" id="progressBuffer" style="width:0%"></div>
+
+    <div class="progress__bar" id="progressFill" style="width:0%">
+      <div class="progress__thumb" id="progressThumb" style="left:0%"></div>
+    </div>
+
+    <div class="progress__shadow" aria-hidden="true"></div>
+  </div>
+</div>
+<script>
+(function () {
+  const bar    = document.getElementById('progressBar');
+  const fill   = document.getElementById('progressFill');
+  const thumb  = document.getElementById('progressThumb');
+  const curEl  = document.getElementById('currentTime');
+  const totEl  = document.getElementById('totalTime');
+
+  if (!bar || !fill || !thumb) return;
+
+  let isScrubbing = false;
+  let wasPlaying  = false;
+
+  const getDuration = () => (window.appState?.duration) ||
+                            (window.appState?.audio?.duration) || 0;
+
+  const formatTime = (t) => (window.utils?.formatTime ? window.utils.formatTime(t)
+                         : new Date(t * 1000).toISOString().substring(14, 19));
+
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+  function percentFromClientX(clientX) {
+    const rect = bar.getBoundingClientRect();
+    const raw  = (clientX - rect.left) / rect.width;
+    return clamp01(raw) * 100;
+  }
+
+  function setUI(percent, currentTime) {
+    fill.style.width = percent + '%';
+    thumb.style.left = percent + '%';
+    if (Number.isFinite(currentTime) && curEl) curEl.textContent = formatTime(currentTime);
+    bar.setAttribute('aria-valuenow', Math.round(percent));
+  }
+
+  function seekToPercent(percent, finalize) {
+    const dur = getDuration();
+    const t   = dur * (percent / 100);
+    setUI(percent, t);
+    if (finalize && window.appState?.audio && Number.isFinite(t)) {
+      window.appState.audio.currentTime = t;
+    }
+  }
+
+  /* Pointer interactions */
+  function onPointerDown(e) {
+    e.preventDefault();
+    bar.setPointerCapture?.(e.pointerId ?? 1);
+    isScrubbing = true;
+    bar.classList.add('is-dragging');
+    wasPlaying = !!window.appState?.isPlaying;
+    if (wasPlaying) window.appState.audio.pause();
+    const pct = percentFromClientX(e.clientX ?? (e.touches?.[0]?.clientX || 0));
+    seekToPercent(pct, false);
+
+    bar.addEventListener('pointermove', onPointerMove, { passive: false });
+    window.addEventListener('pointerup', onPointerUp, { once: true });
+    window.addEventListener('pointercancel', onPointerUp, { once: true });
+  }
+
+  function onPointerMove(e) {
+    if (!isScrubbing) return;
+    e.preventDefault();
+    const pct = percentFromClientX(e.clientX ?? (e.touches?.[0]?.clientX || 0));
+    seekToPercent(pct, false);
+  }
+
+  function onPointerUp(e) {
+    const pct = percentFromClientX(e.clientX ?? (e.changedTouches?.[0]?.clientX || 0));
+    seekToPercent(pct, true);
+    isScrubbing = false;
+    bar.classList.remove('is-dragging', 'is-hovering');
+    bar.releasePointerCapture?.(e.pointerId ?? 1);
+    bar.removeEventListener('pointermove', onPointerMove);
+    if (wasPlaying) window.appState?.audio?.play();
+  }
+
+  /* Hover affordance */
+  const onEnter = () => bar.classList.add('is-hovering');
+  const onLeave = () => { if (!isScrubbing) bar.classList.remove('is-hovering'); };
+
+  bar.addEventListener('pointerdown', onPointerDown, { passive: false });
+  bar.addEventListener('pointerenter', onEnter);
+  bar.addEventListener('pointerleave', onLeave);
+
+  /* Keyboard support (role=slider on track) */
+  bar.addEventListener('keydown', (e) => {
+    const step = 100 / 100;  // 1% step
+    const big  = 100 / 10;   // 10% step
+    const now  = parseFloat(bar.getAttribute('aria-valuenow') || '0');
+    let next = now;
+
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown': next = now - step; break;
+      case 'ArrowRight':
+      case 'ArrowUp':   next = now + step; break;
+      case 'PageDown':  next = now - big;  break;
+      case 'PageUp':    next = now + big;  break;
+      case 'Home':      next = 0;          break;
+      case 'End':       next = 100;        break;
+      default: return;
+    }
+    e.preventDefault();
+    next = Math.max(0, Math.min(100, next));
+    seekToPercent(next, true);
+  });
+
+  /* Sync UI from audio timeupdate, but never fight the drag */
+  const origUpdate = (window.player && window.player.updateProgress) ? window.player.updateProgress : null;
+
+  function syncedUpdate() {
+    if (isScrubbing) return;
+    const audio = window.appState?.audio;
+    if (!audio) return;
+    const dur = getDuration();
+    const cur = audio.currentTime || 0;
+    const pct = dur > 0 ? (cur / dur) * 100 : 0;
+    setUI(pct, cur);
+  }
+
+  /* If your player already wires timeupdate to updateProgress, you can override: */
+  if (origUpdate) {
+    window.player.updateProgress = function () {
+      if (isScrubbing) return;
+      const audio = window.appState?.audio;
+      if (!audio) return;
+      const dur = getDuration();
+      const cur = audio.currentTime || 0;
+      const pct = dur > 0 ? (cur / dur) * 100 : 0;
+      setUI(pct, cur);
+      window.mediaSession?.updatePlaybackState?.(window.appState?.isPlaying);
+    };
+  } else {
+    /* Fallback: attach our own timeupdate listener */
+    window.appState?.audio?.addEventListener('timeupdate', syncedUpdate);
+  }
+
+  /* When metadata is ready, set total time label */
+  (window.appState?.audio)?.addEventListener('loadedmetadata', () => {
+    const dur = getDuration();
+    if (totEl && Number.isFinite(dur)) totEl.textContent = formatTime(dur);
+  });
+})();
+</script>
+</script>
+                <div class="controls">
+                  <button class="previous btn" id="prevBtn">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4L75.5 231l0 49 192 160z" />
+                    </svg>
+                  </button>
+
+                  <button class="reWind btn previous" id="rewindBtn">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                      <path d="M459.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4L288 214.3V296l171.5 144.6zM256 352V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4L11.5 231C4.2 237.5 0 246.5 0 256s4.2 18.5 11.5 24.6l192 160c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V352z" />
+                    </svg>
+                  </button>
+
+                  <button class="playPause btn primary" id="playBtn">
+                    <svg class="icon play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                      <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+                    </svg>
+                    
+                    <svg class="icon pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z" />
+                    </svg>
+                  </button>
+
+                  <button class="fastFoward btn" id="forwardBtn">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                      <path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4L224 214.3V296L52.5 440.6zM256 352V96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4l192 160c7.3 6.1 11.5 15.1 11.5 24.6s-4.2 18.5-11.5 24.6L308.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S256 428.4 256 416V352z" />
+                    </svg>
+                  </button>
+
+                  <button class="next btn" id="nextBtn">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96c0-12.4 7.2-23.7 18.4-29s24.5-3.6 34.1 4.4l192 160V96c0-17.7 14.3-32 32-32s32 14.3 32 32v320c0 17.7-14.3 32-32 32s-32-14.3-32-32V271.4L52.5 440.6z" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="actions">
+                  <button class="favorite action" id="favoriteBtn" title="Add to Favorites">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                    </svg>
+                  </button>
+
+                  <button class="queue action" id="queueBtn" title="View Queue">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                    </svg>
+                  </button>
+
+                  <button class="share action" id="shareBtn" title="Share">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                    </svg>
+                  </button>
+
+                  <button class="more action" id="moreBtn" title="More Options">
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Queue -->
+              <div class="content" data-tab="queue">
+                <ul id="queueList" class="list">
+                  <div class="empty">
+                    <div class="emptyIcon">
+                      <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                      </svg>
+                    </div>
+                    <div class="emptyText">Queue is empty.</div>
+                  </div>
+                </ul>
+              </div>
+
+              <!-- Recent -->
+              <div class="content" data-tab="recent">
+                <ul id="recentList" class="list">
+                  <div class="empty">
+                    <div class="emptyIcon">
+                      <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                      </svg>
+                    </div>
+                    <div class="emptyText">No recently played songs.</div>
+                  </div>
+                </ul>
+              </div>
+            </div>
+          </div><!-- Music Player -->
+        </div><!-- Content -->
+      </div><!-- drawerContent -->
+    </div><!-- drawerSlide -->
+  </div><!-- drawerScroller -->
+  <canvas id="reactionCanvas"></canvas>
+</aside><!-- drawer -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <!-- Main Content Area -->
+      <div id="mainArea">
+        
+        <main id="main-container" class="content-container max-w-6xl mx-auto pb-24">
+          <div id="contentWrapper" class="relative">
+
+
+
+
+ 
+            <nav aria-label="Breadcrumb" class="breadcrumb-wrapper rounded-sm breadcrumb-fade-in">
+                <ol class="breadcrumb-list flex items-center whitespace-nowrap">
+
+
+
+                    <li class="breadcrumb-item inline-flex items-center">
+                        <a href="#" class="breadcrumb-link flex items-center text-sm">
+                            <svg class="breadcrumb-home-icon flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="breadcrumb-chevron">
+                        <svg class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </li>
+                    
+                    <li class="breadcrumb-item">
+                        <a href="#" class="breadcrumb-link text-sm">
+                            Projects
+                        </a>
+                    </li>
+                    
+                    <li class="breadcrumb-chevron">
+                        <svg class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </li>
+                    
+                    <li class="breadcrumb-item">
+                        <a href="#" class="breadcrumb-link text-sm">
+                            Web Development
+                        </a>
+                    </li>
+                    
+                    <li class="breadcrumb-chevron">
+                        <svg class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </li>
+                    
+                    <li class="breadcrumb-item active">
+                        <span class="breadcrumb-link text-sm font-semibold" aria-current="page">
+                            E-Commerce Platform
+                        </span>
+                    </li>
+                    
+                    
+                    
+                </ol>
+            </nav>
+
+
+
+
+
+
+            <div id="dynamic-content" class="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+              <div class="text-center py-8 md:py-12">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 gradient-text">Discover Amazing Music</h1>
+                <p class="text-lg md:text-xl text-gray-400 mb-8 md:mb-12 max-w-2xl mx-auto">Explore artists, albums, and songs from your personal library with an immersive listening experience</p>
+              </div>
+              
+              <h4 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 px-4 font-semibold text-indigo-600">Featured Artists</h4>
+              
+              <div id="featured-artists" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 px-4"></div>
+            </div>
+
+            <div id="content-loading" class="absolute inset-0 bg-bg-default bg-opacity-80 backdrop-blur-sm flex items-center justify-center hidden">
+              <div class="loading-animation">
+                <div class="spinner-container">
+                  <div class="spinner"></div>
+                </div>
+                <p class="mt-4 text-fg-muted">Loading content...</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        
+      </div>
+
+
+
+
+<!-- Popover Portal -->
+<div id="popover-portal" class="popover-portal">
+<!-- 
+PopOvers Injected Here 
+-->
+</div>
+
+
+
+<!-- PWA Install Banner -->
+<div id="pwa-install-banner" class="fixed bottom-0 end-0 z-60 sm:max-w-sm w-full mx-auto p-6 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-2xs dark:bg-neutral-900 dark:border-neutral-800 flex gap-x-4">
+          <svg class="shrink-0 w-8 h-auto" width="72" height="63" viewBox="0 0 72 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.5174 56.1528C16.2903 57.6825 16.929 61.4559 14.8118 60.9459C13.5013 60.5381 11.4445 57.6213 12.493 56.1528C12.661 55.8468 13.2189 55.2757 14.106 55.4389" stroke="currentColor" class="dark:stroke-neutral-200" stroke-width="2" stroke-linecap="round"/>
+            <path d="M15.5173 49.6263L14.0262 48.5579C13.5346 48.2056 12.8477 48.3707 12.658 48.945C12.3456 49.8907 12.1258 51.1463 12.462 52.2324C12.5336 52.4636 12.7127 52.6466 12.9449 52.7146C13.8342 52.9751 15.2568 52.9048 15.8197 51.054" stroke="currentColor" class="dark:stroke-neutral-200" stroke-width="2" stroke-linecap="round"/>
+            <ellipse cx="51.2061" cy="22.3973" rx="3.02446" ry="3.05945" fill="currentColor" class="text-gray-800 dark:fill-neutral-200"/>
+          </svg>
+          <div class="grow">
+            <p class="text-sm text-gray-800 dark:text-neutral-200">
+              Open in the app, or 
+              <a id="pwa-download-link" class="inline-flex items-center gap-x-1.5 text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
+                Install App
+              </a>
+            </p>
+          </div>
+          <div>
+            <button id="pwa-dismiss" type="button" class="p-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-gray-500 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
+              <span class="sr-only">Dismiss</span>
+              <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+        </div>
+</div>
+
+
+</div><!-- W R A P O E R -->
+
+
+
+
+<!-- Dependencies -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tippy.js@6.3.7/dist/tippy.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+
+
+<!-- ToolTips - PopOvers -->
+<script type="module" src="./siteScripts/utilities/overlays.js"></script>
+
+<!-- Service  Worker - Also some temporary fixes for Music App -->
+<script>
+      // Theme Toggle Functionality
+      document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.theme-toggle-container');
+        const trigger = document.querySelector('.theme-trigger');
+        const themeButtons = document.querySelectorAll('.theme-options button');
+        const html = document.documentElement;
+        
+        // Set initial theme from localStorage or default
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        
+        // Set active button
+        themeButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.theme === savedTheme);
+          
+          btn.addEventListener('click', () => {
+            const theme = btn.dataset.theme;
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Update button states
+            themeButtons.forEach(b => b.classList.toggle('active', b === btn));
+            
+            // Close the menu after selection
+            container.classList.remove('active');
+          });
+        });
+        
+        // Toggle menu
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          container.classList.toggle('active');
+        });
+        
+        // Close when clicking outside
+        document.addEventListener('click', () => {
+          container.classList.remove('active');
+        });
+      });
+
+      // Breadcrumb Navigation Intersection Observer
+      document.addEventListener("DOMContentLoaded", function () {
+        let nav = document.querySelector(".breadcrumb-navigation");
+        let artistTop = document.querySelector(".artistTop");
+
+        if (nav && artistTop) {
+          let observer = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                nav.classList.toggle("stuck", !entry.isIntersecting);
+                artistTop.classList.toggle("stuck", !entry.isIntersecting);
+              });
+            },
+            {
+              threshold: 0,
+              rootMargin: "-1px 0px 0px 0px",
+            }
+          );
+
+          observer.observe(artistTop);
+        }
+      });
+
+/**
+      // Music Player Toggle
+      const triggerEl = document.getElementById("now-playing-area");
+      const closePlayerEl = document.querySelector("#musicPlayer .close");
+      const musicPlayer = document.getElementById("musicPlayer");
+
+      triggerEl.addEventListener("click", () => {
+        musicPlayer.classList.toggle("show");
+      });
+
+      closePlayerEl.addEventListener("click", () => {
+        musicPlayer.classList.remove("show");
+      });
+**/
+      // PWA Installation Banner
+      let deferredPrompt;
+      const banner = document.getElementById("pwa-install-banner");
+      const installLink = document.getElementById("pwa-download-link");
+      const dismissBtn = document.getElementById("pwa-dismiss");
+
+      window.addEventListener("beforeinstallprompt", e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showPWABanner();
+      });
+
+      function showPWABanner() {
+        banner.style.opacity = "1";
+        banner.style.pointerEvents = "auto";
+        banner.classList.remove("translate-y-5");
+      }
+
+      function hidePWABanner() {
+        banner.style.opacity = "0";
+        banner.style.pointerEvents = "none";
+      }
+
+      installLink.addEventListener("click", async e => {
+        e.preventDefault();
+        hidePWABanner();
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`User response to the install prompt: ${outcome}`);
+          deferredPrompt = null;
+        }
+      });
+
+      dismissBtn.addEventListener("click", hidePWABanner);
+
+      window.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(display-mode: standalone)").matches) {
+          console.log("App running in standalone mode.");
+        } else if ("getInstalledRelatedApps" in navigator) {
+          navigator.getInstalledRelatedApps().then(relatedApps => {
+            if (relatedApps.length > 0) {
+              console.log("PWA installed.");
+              showPWABanner();
+            } else {
+              console.log("PWA not installed.");
+            }
+          });
+        }
+      });
+
+      // Service Worker Registration
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./system/serviceWorker.js")
+            .then(registration => {
+              console.log("Service Worker registered:", registration.scope);
+            })
+            .catch(err => {
+              console.error("Service Worker registration failed:", err);
+            });
+        });
+      }
+
+      // Eruda Dev Tools Initialization
+      eruda.init();
+
+      // Create a custom Eruda tool for live CSS editing
+      eruda.add({
+        name: "Live CSS",
+        init($el) {
+          $el.html(`
+            <textarea id="liveCssArea" style="width:100%;height:200px;"></textarea>
+            <button id="applyCssBtn">Apply CSS</button>
+          `);
+
+          let styleTag = document.createElement("style");
+          document.head.appendChild(styleTag);
+
+          $el.on("click", "#applyCssBtn", () => {
+            styleTag.innerHTML = document.getElementById("liveCssArea").value;
+          });
+        },
+        show() {},
+        hide() {},
+      });
+    </script>
+
+<!-- Tiny Temporary Fixer --
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const trigger = document.getElementById("menu-trigger");
+  const dropdown = document.getElementById("dropdown-menu");
+
+  if (trigger && dropdown) {
+    trigger.addEventListener("click", function() {
+      dropdown.classList.toggle("show");
+    });
+  }
+});
+</script>
+---------------------------------------------------------->
+
+
+<!-- Music Library -->
+<script type="module" src="./modules/library.js"></script>
+
+<!-- Global Initialize -->
+<script type="module">
+        import { music } from './modules/library.js';
+        import { render } from './siteScripts/utilities/templates.js';
+        import { app } from './siteScripts/global.js';
+        
+        window.music = music;
+//        window.Templates = Templates;
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await app.initialize();
+        });
+    </script>
+
+<!--
+<script>
+const drawerEnhancer = {
+  init() {
+    const drawer = document.querySelector('.drawer');
+    const drawerScroller = document.querySelector('.drawerScroller');
+    
+    if (!drawer || !drawerScroller) return;
+    
+    let isDragging = false;
+    let startY = 0;
+    
+    const snapPositions = [0, 50, 75]; // closed, initial, fully extended
+    
+    // Prevent horizontal scrolling on drawer scroller too
+    drawerScroller.style.overflowX = 'hidden';
+    drawerScroller.style.touchAction = 'pan-y';
+    
+    drawerScroller.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      startY = e.touches[0].clientY;
+      drawerScroller.style.scrollSnapType = 'none';
+    });
+    
+    drawerScroller.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      
+      const deltaY = startY - e.touches[0].clientY;
+      const scrollTop = drawerScroller.scrollTop;
+      
+      if (deltaY > 0 && scrollTop < drawerScroller.scrollHeight - drawerScroller.clientHeight) {
+        return;
+      }
+    });
+    
+    drawerScroller.addEventListener('touchend', () => {
+      isDragging = false;
+      drawerScroller.style.scrollSnapType = 'y mandatory';
+      
+      setTimeout(() => {
+        const scrollTop = drawerScroller.scrollTop;
+        const viewportHeight = window.innerHeight;
+        const currentPosition = (scrollTop / viewportHeight) * 100;
+        
+        let nearestSnap = snapPositions.reduce((prev, curr) => 
+          Math.abs(curr - currentPosition) < Math.abs(prev - currentPosition) ? curr : prev
+        );
+        
+        drawerScroller.scrollTo({
+          top: (nearestSnap / 100) * viewportHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
+    });
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  drawerEnhancer.init();
+});
+</script>
+-->
+</body>
+</html>
