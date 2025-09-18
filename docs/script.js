@@ -786,6 +786,9 @@ notifications.show("Deleted", "warning", () => undo());`
 
         // Theme toggle removed - using GitHub Dark Dimmed theme only
 
+        // Tab navigation
+        this.setupTabNavigation();
+
         // Menu toggle
         const menuToggle = document.getElementById('menu-toggle');
         const menuDropdown = document.getElementById('menu-dropdown');
@@ -918,6 +921,281 @@ notifications.show("Deleted", "warning", () => undo());`
         }, 3000);
     }
 
+    setupTabNavigation() {
+        // Tab switching functionality
+        document.querySelectorAll('.docs-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.closest('.docs-tab').dataset.tab;
+                this.switchTab(tabName);
+            });
+        });
+
+        // Source code specific functionality
+        this.setupSourceCodeTab();
+    }
+
+    switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.docs-tab').forEach(tab => {
+            tab.classList.remove('active');
+            tab.classList.add('border-transparent', 'text-slate-400');
+            tab.classList.remove('border-primary', 'text-primary');
+        });
+
+        const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+            activeTab.classList.remove('border-transparent', 'text-slate-400');
+            activeTab.classList.add('border-primary', 'text-primary');
+        }
+
+        // Show/hide tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        const tabContent = document.getElementById(`${tabName}-tab-content`);
+        if (tabContent) {
+            tabContent.classList.remove('hidden');
+        }
+
+        // Load content if needed
+        if (tabName === 'source-code') {
+            this.loadSourceCode();
+        }
+    }
+
+    setupSourceCodeTab() {
+        // Copy source code button
+        const copyBtn = document.getElementById('copy-source-code');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                this.copySourceCode();
+            });
+        }
+
+        // Toggle line numbers
+        const lineNumbersBtn = document.getElementById('toggle-line-numbers');
+        if (lineNumbersBtn) {
+            lineNumbersBtn.addEventListener('click', () => {
+                this.toggleLineNumbers();
+            });
+        }
+
+        // Toggle indicators
+        const indicatorsBtn = document.getElementById('toggle-indicators');
+        if (indicatorsBtn) {
+            indicatorsBtn.addEventListener('click', () => {
+                this.toggleIndicators();
+            });
+        }
+    }
+
+    async loadSourceCode() {
+        const codeContent = document.getElementById('source-code-content');
+        const lineNumbers = document.getElementById('line-numbers');
+        
+        if (!codeContent || !lineNumbers) return;
+
+        try {
+            // Show loading state
+            codeContent.textContent = '// Loading global.js source code...';
+            
+            // Fetch the source code
+            const response = await fetch('../siteScripts/global.js');
+            const sourceCode = await response.text();
+            
+            // Update the content
+            codeContent.textContent = sourceCode;
+            
+            // Generate line numbers
+            const lines = sourceCode.split('\n');
+            lineNumbers.innerHTML = lines.map((_, index) => 
+                `<div class="line-number" data-line="${index + 1}">${index + 1}</div>`
+            ).join('');
+            
+            // Add interactive indicators
+            this.addInteractiveIndicators(sourceCode, lines);
+            
+            // Apply syntax highlighting
+            if (window.Prism) {
+                Prism.highlightElement(codeContent);
+            }
+            
+        } catch (error) {
+            console.error('Failed to load source code:', error);
+            codeContent.textContent = '// Error loading source code. Please check the file path.';
+        }
+    }
+
+    addInteractiveIndicators(sourceCode, lines) {
+        const codeContent = document.getElementById('source-code-content');
+        
+        // Find important code structures and add indicators
+        const indicatorPositions = [];
+        
+        // Find class, function, object declarations
+        Object.entries(this.codeStructure).forEach(([name, item]) => {
+            if (item.line) {
+                indicatorPositions.push({
+                    line: item.line - 1, // Convert to 0-based index
+                    name: name,
+                    type: item.type,
+                    description: item.description || ''
+                });
+            }
+        });
+        
+        // Sort by line number
+        indicatorPositions.sort((a, b) => a.line - b.line);
+        
+        // Add indicators to the HTML
+        let htmlLines = lines.map((line, index) => {
+            const indicator = indicatorPositions.find(pos => pos.line === index);
+            if (indicator) {
+                return line + `<span class="code-indicator ${indicator.type}" data-name="${indicator.name}" data-type="${indicator.type}" data-line="${index + 1}">
+                    <div class="indicator-tooltip">${indicator.name} (${indicator.type})<br><small>${indicator.description}</small></div>
+                </span>`;
+            }
+            return line;
+        });
+        
+        codeContent.innerHTML = htmlLines.join('\n');
+        
+        // Add click handlers for indicators
+        document.querySelectorAll('.code-indicator').forEach(indicator => {
+            indicator.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const name = indicator.dataset.name;
+                const type = indicator.dataset.type;
+                const line = indicator.dataset.line;
+                
+                this.showIndicatorModal(name, type, line);
+            });
+        });
+    }
+
+    showIndicatorModal(name, type, line) {
+        const item = this.codeStructure[name];
+        if (!item) return;
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `
+            <div class="bg-slate-800 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-primary">${name}</h3>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">${type}</span>
+                                <span class="text-slate-400 text-sm">Line ${line}</span>
+                            </div>
+                        </div>
+                        <button class="text-slate-400 hover:text-white text-xl" onclick="this.closest('.fixed').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <p class="text-slate-300">${item.description || 'No description available.'}</p>
+                        
+                        ${item.methods ? `
+                        <div>
+                            <h4 class="font-semibold text-slate-200 mb-2">Methods</h4>
+                            <div class="space-y-2">
+                                ${Object.entries(item.methods).map(([methodName, method]) => `
+                                    <div class="bg-slate-900/50 rounded p-3">
+                                        <code class="text-blue-400">${methodName}()</code>
+                                        <p class="text-sm text-slate-400 mt-1">${method.description || ''}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="flex justify-between items-center pt-4 border-t border-slate-700">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors" onclick="window.docsAppInstance.switchTab('documentation'); window.docsAppInstance.showItemDetails('${name}', window.docsAppInstance.codeStructure['${name}']); this.closest('.fixed').remove();">
+                                <i class="fas fa-book mr-2"></i>View Full Documentation
+                            </button>
+                            <button class="text-slate-400 hover:text-white" onclick="this.closest('.fixed').remove()">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    copySourceCode() {
+        const codeContent = document.getElementById('source-code-content');
+        if (!codeContent) return;
+        
+        const text = codeContent.textContent;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Source code copied to clipboard!', 'success');
+            }).catch(() => {
+                this.fallbackCopyToClipboard(text);
+            });
+        } else {
+            this.fallbackCopyToClipboard(text);
+        }
+    }
+
+    fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            this.showToast('Source code copied to clipboard!', 'success');
+        } catch (error) {
+            this.showToast('Failed to copy source code', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    toggleLineNumbers() {
+        const lineNumbers = document.getElementById('line-numbers');
+        const btn = document.getElementById('toggle-line-numbers');
+        
+        if (lineNumbers && btn) {
+            lineNumbers.style.display = lineNumbers.style.display === 'none' ? 'block' : 'none';
+            btn.classList.toggle('bg-slate-600');
+        }
+    }
+
+    toggleIndicators() {
+        const indicators = document.querySelectorAll('.code-indicator');
+        const btn = document.getElementById('toggle-indicators');
+        
+        if (btn) {
+            const isHidden = btn.classList.contains('bg-slate-600');
+            
+            indicators.forEach(indicator => {
+                indicator.style.display = isHidden ? 'inline-block' : 'none';
+            });
+            
+            btn.classList.toggle('bg-slate-600');
+        }
+    }
+
     setupSyntaxHighlighting() {
         if (window.Prism) {
             try {
@@ -1043,6 +1321,9 @@ notifications.show("Deleted", "warning", () => undo());`
             case 'examples':
                 this.showExamples();
                 break;
+            case 'source-code':
+                this.showSourceCode();
+                break;
         }
     }
 
@@ -1136,6 +1417,636 @@ appState.favorites.toggle("songs", "song-123");</code></pre>
         `;
         
         this.setupSyntaxHighlighting();
+    }
+
+    showSourceCode() {
+        const contentArea = document.getElementById('content-area');
+        document.getElementById('welcome-section').classList.add('hidden');
+        contentArea.classList.remove('hidden');
+        
+        contentArea.innerHTML = `
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-3xl font-bold gradient-text mb-2">Source Code Viewer</h1>
+                        <p class="text-slate-400">Interactive view of global.js with documentation links</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="toggle-indicators" class="source-control-btn">
+                            <i class="fas fa-eye"></i> Toggle Indicators
+                        </button>
+                        <button id="collapse-all" class="source-control-btn">
+                            <i class="fas fa-compress"></i> Collapse All
+                        </button>
+                        <button id="expand-all" class="source-control-btn">
+                            <i class="fas fa-expand"></i> Expand All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="source-viewer">
+                    <div class="source-header">
+                        <div class="source-language">
+                            <i class="fab fa-js-square mr-2"></i>
+                            JavaScript • global.js • 5,493 lines
+                        </div>
+                        <div class="source-controls">
+                            <button class="source-control-btn" onclick="window.docsAppInstance.copySourceCode()">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <button class="source-control-btn" onclick="window.docsAppInstance.downloadSource()">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                    <div class="source-content" id="source-content">
+                        <div class="source-line-numbers" id="line-numbers"></div>
+                        <div class="source-code" id="source-code-content">
+                            <div class="flex items-center justify-center py-20">
+                                <div class="text-center">
+                                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+                                    <p class="text-slate-400">Loading source code...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.loadSourceCode();
+    }
+
+    async loadSourceCode() {
+        try {
+            // Try multiple possible paths for the global.js file
+            const possiblePaths = [
+                '../siteScripts/global.js',
+                './siteScripts/global.js',
+                '/siteScripts/global.js',
+                'siteScripts/global.js'
+            ];
+            
+            let sourceCode = null;
+            let loadedFromPath = null;
+            
+            for (const path of possiblePaths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        sourceCode = await response.text();
+                        loadedFromPath = path;
+                        break;
+                    }
+                } catch (e) {
+                    // Continue to next path
+                    continue;
+                }
+            }
+            
+            if (!sourceCode) {
+                // If we can't load the actual file, create a mock version based on our parsed structure
+                sourceCode = this.generateMockSourceCode();
+                this.showToast('Loaded mock source code for demonstration', 'info');
+            }
+            
+            this.renderSourceCodeWithIndicators(sourceCode);
+        } catch (error) {
+            console.error('Error loading source code:', error);
+            // Fallback to mock source code
+            const mockSource = this.generateMockSourceCode();
+            this.renderSourceCodeWithIndicators(mockSource);
+            this.showToast('Loaded mock source code for demonstration', 'warning');
+        }
+    }
+
+    generateMockSourceCode() {
+        // Generate a representative mock of the global.js file based on our parsed structure
+        let mockCode = `/*
+ * MyTunes Global.js - Music Player Application
+ * This is a mock representation of the actual global.js file
+ * Generated from the parsed code structure for demonstration
+ */
+
+`;
+        
+        // Add imports and initial setup
+        mockCode += `// Utility functions and helpers
+const utils = {
+    formatTime: (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return \`\${mins}:\${secs.toString().padStart(2, '0')}\`;
+    },
+    
+    debounce: (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
+    
+    throttle: (func, limit) => {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
+    }
+};
+
+// Theme management system
+const theme = {
+    get: () => document.documentElement.getAttribute("data-theme") || "dark",
+    set: (themeName) => {
+        document.documentElement.setAttribute("data-theme", themeName);
+        localStorage.setItem("preferred-theme", themeName);
+    },
+    toggle: () => {
+        const current = theme.get();
+        const newTheme = current === "dark" ? "light" : "dark";
+        theme.set(newTheme);
+    }
+};
+
+// Loading bar management
+const loadingBar = {
+    show: () => {
+        const bar = document.getElementById('loading-bar');
+        if (bar) bar.style.display = 'block';
+    },
+    
+    hide: () => {
+        const bar = document.getElementById('loading-bar');
+        if (bar) bar.style.display = 'none';
+    },
+    
+    setProgress: (percent) => {
+        const progress = document.querySelector('#loading-bar .progress');
+        if (progress) progress.style.width = percent + '%';
+    }
+};
+
+// Page update management
+const pageUpdates = {
+    updateTitle: (title) => {
+        document.title = title || 'MyTunes';
+    },
+    
+    updateFavicon: (iconUrl) => {
+        const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = 'image/x-icon';
+        link.rel = 'shortcut icon';
+        link.href = iconUrl;
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }
+};
+
+// Music player core functionality
+const musicPlayer = {
+    currentTrack: null,
+    isPlaying: false,
+    volume: 1.0,
+    
+    async loadTrack(trackData) {
+        this.currentTrack = trackData;
+        const audio = document.getElementById('audio-player');
+        if (audio && trackData.url) {
+            audio.src = trackData.url;
+            await audio.load();
+        }
+    },
+    
+    async play() {
+        const audio = document.getElementById('audio-player');
+        if (audio) {
+            try {
+                await audio.play();
+                this.isPlaying = true;
+                this.updatePlayButton();
+            } catch (error) {
+                console.error('Playback failed:', error);
+            }
+        }
+    },
+    
+    pause() {
+        const audio = document.getElementById('audio-player');
+        if (audio) {
+            audio.pause();
+            this.isPlaying = false;
+            this.updatePlayButton();
+        }
+    },
+    
+    updatePlayButton() {
+        const playBtn = document.getElementById('play-button');
+        if (playBtn) {
+            playBtn.innerHTML = this.isPlaying 
+                ? '<i class="fas fa-pause"></i>' 
+                : '<i class="fas fa-play"></i>';
+        }
+    }
+};
+
+// Application State Management Class
+class AppState {
+    constructor() {
+        this.currentSong = null;
+        this.playlist = [];
+        this.queue = [];
+        this.isPlaying = false;
+        this.volume = 1.0;
+        this.currentTime = 0;
+        this.duration = 0;
+        this.favorites = new Set();
+        this.settings = {
+            autoplay: true,
+            shuffle: false,
+            repeat: 'none'
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        this.loadSettings();
+        this.setupEventListeners();
+    }
+    
+    loadSettings() {
+        const saved = localStorage.getItem('mytunes-settings');
+        if (saved) {
+            this.settings = { ...this.settings, ...JSON.parse(saved) };
+        }
+    }
+    
+    saveSettings() {
+        localStorage.setItem('mytunes-settings', JSON.stringify(this.settings));
+    }
+    
+    setupEventListeners() {
+        // Audio element event listeners
+        const audio = document.getElementById('audio-player');
+        if (audio) {
+            audio.addEventListener('timeupdate', () => {
+                this.currentTime = audio.currentTime;
+                this.updateProgress();
+            });
+            
+            audio.addEventListener('loadedmetadata', () => {
+                this.duration = audio.duration;
+            });
+            
+            audio.addEventListener('ended', () => {
+                this.handleTrackEnd();
+            });
+        }
+    }
+    
+    updateProgress() {
+        const progressBar = document.getElementById('progress-bar');
+        if (progressBar && this.duration > 0) {
+            const percent = (this.currentTime / this.duration) * 100;
+            progressBar.style.width = percent + '%';
+        }
+    }
+    
+    handleTrackEnd() {
+        if (this.settings.repeat === 'one') {
+            this.replay();
+        } else if (this.queue.length > 0 || this.settings.repeat === 'all') {
+            this.next();
+        }
+    }
+    
+    replay() {
+        const audio = document.getElementById('audio-player');
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play();
+        }
+    }
+    
+    next() {
+        // Implementation for next track
+        if (this.queue.length > 0) {
+            const nextTrack = this.queue.shift();
+            this.playSong(nextTrack);
+        }
+    }
+    
+    async playSong(songData) {
+        this.currentSong = songData;
+        await musicPlayer.loadTrack(songData);
+        await musicPlayer.play();
+    }
+}
+
+// Global application state instance
+const appState = new AppState();
+
+// Touch event handlers for mobile
+function touchStart(event) {
+    const touch = event.touches[0];
+    return {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now()
+    };
+}
+
+function touchEnd(event, startTouch) {
+    const touch = event.changedTouches[0];
+    const endTouch = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now()
+    };
+    
+    const deltaX = endTouch.x - startTouch.x;
+    const deltaY = endTouch.y - startTouch.y;
+    const deltaTime = endTouch.time - startTouch.time;
+    
+    // Detect swipe gestures
+    if (Math.abs(deltaX) > 50 && deltaTime < 300) {
+        if (deltaX > 0) {
+            // Swipe right - previous track
+            appState.previous();
+        } else {
+            // Swipe left - next track
+            appState.next();
+        }
+    }
+}
+
+// Animation frame helper
+function frame(callback) {
+    requestAnimationFrame(callback);
+}
+
+// Additional objects and functionality...
+const player = { /* Player implementation */ };
+const controls = { /* Controls implementation */ };
+const ui = { /* UI management */ };
+const playlists = { /* Playlist management */ };
+const notifications = { /* Notification system */ };
+
+// Action grid items configuration
+const ACTION_GRID_ITEMS = [
+    { id: 'play-next', icon: 'play', label: 'Play Next' },
+    { id: 'add-queue', icon: 'plus', label: 'Add to Queue' },
+    { id: 'add-playlist', icon: 'list', label: 'Add to Playlist' },
+    { id: 'favorite', icon: 'heart', label: 'Favorite' }
+];
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('MyTunes application initialized');
+    console.log('Total lines of code: 5,493');
+    console.log('Objects: 18, Functions: 50, Properties: 15');
+});
+
+/* End of mock global.js file */`;
+
+        return mockCode;
+    }
+
+    renderSourceCodeWithIndicators(sourceCode) {
+        const lines = sourceCode.split('\n');
+        const lineNumbersContainer = document.getElementById('line-numbers');
+        const sourceCodeContainer = document.getElementById('source-code-content');
+        
+        // Generate line numbers
+        const lineNumbers = lines.map((_, index) => 
+            `<div class="line-number">${index + 1}</div>`
+        ).join('');
+        lineNumbersContainer.innerHTML = lineNumbers;
+        
+        // Process source code with syntax highlighting and indicators
+        const processedLines = lines.map((line, index) => {
+            const lineNumber = index + 1;
+            const hasDocumentation = this.lineHasDocumentation(line, lineNumber);
+            const indicatorClass = hasDocumentation ? 'has-documentation' : '';
+            
+            return `<span class="source-line ${indicatorClass}" data-line="${lineNumber}">
+                ${this.highlightSyntax(line)}
+                ${hasDocumentation ? `<div class="code-indicator" data-line="${lineNumber}" onclick="window.docsAppInstance.showCodeExplanation(${lineNumber}, '${this.escapeForAttribute(line)}')"></div>` : ''}
+            </span>`;
+        }).join('\n');
+        
+        sourceCodeContainer.innerHTML = processedLines;
+        
+        // Setup event listeners for controls
+        this.setupSourceCodeControls();
+    }
+
+    lineHasDocumentation(line, lineNumber) {
+        // Check if this line contains a documented function, class, object, or constant
+        const trimmedLine = line.trim();
+        
+        // Check for function declarations
+        if (trimmedLine.match(/^(function\s+\w+|const\s+\w+\s*=\s*function|const\s+\w+\s*=\s*\([^)]*\)\s*=>)/)) {
+            const functionName = this.extractFunctionName(trimmedLine);
+            return this.isDocumented(functionName);
+        }
+        
+        // Check for class declarations
+        if (trimmedLine.match(/^class\s+\w+/)) {
+            const className = this.extractClassName(trimmedLine);
+            return this.isDocumented(className);
+        }
+        
+        // Check for object declarations
+        if (trimmedLine.match(/^const\s+\w+\s*=\s*{/)) {
+            const objectName = this.extractObjectName(trimmedLine);
+            return this.isDocumented(objectName);
+        }
+        
+        // Check for constant declarations
+        if (trimmedLine.match(/^const\s+[A-Z_][A-Z0-9_]*\s*=/)) {
+            const constantName = this.extractConstantName(trimmedLine);
+            return this.isDocumented(constantName);
+        }
+        
+        return false;
+    }
+
+    extractFunctionName(line) {
+        const matches = line.match(/(?:function\s+(\w+)|const\s+(\w+)\s*=)/);
+        return matches ? (matches[1] || matches[2]) : null;
+    }
+
+    extractClassName(line) {
+        const matches = line.match(/class\s+(\w+)/);
+        return matches ? matches[1] : null;
+    }
+
+    extractObjectName(line) {
+        const matches = line.match(/const\s+(\w+)\s*=/);
+        return matches ? matches[1] : null;
+    }
+
+    extractConstantName(line) {
+        const matches = line.match(/const\s+([A-Z_][A-Z0-9_]*)\s*=/);
+        return matches ? matches[1] : null;
+    }
+
+    isDocumented(name) {
+        return name && this.codeStructure.hasOwnProperty(name);
+    }
+
+    highlightSyntax(line) {
+        // Simple syntax highlighting (can be enhanced with a proper library)
+        return line
+            .replace(/\b(function|const|let|var|class|if|else|for|while|return|import|export|async|await)\b/g, '<span class="token keyword">$1</span>')
+            .replace(/'([^']*)'|"([^"]*)"/g, '<span class="token string">\'$1$2\'</span>')
+            .replace(/\b(\d+)\b/g, '<span class="token number">$1</span>')
+            .replace(/\/\/.*$/g, '<span class="token comment">$&</span>')
+            .replace(/\/\*[\s\S]*?\*\//g, '<span class="token comment">$&</span>')
+            .replace(/([{}();,])/g, '<span class="token punctuation">$1</span>');
+    }
+
+    showCodeExplanation(lineNumber, lineContent) {
+        const elementName = this.extractElementNameFromLine(lineContent);
+        const documentation = this.codeStructure[elementName];
+        
+        if (!documentation) return;
+        
+        // Create tooltip
+        const tooltip = document.createElement('div');
+        tooltip.className = 'code-tooltip';
+        tooltip.innerHTML = `
+            <div class="code-tooltip-title">${elementName}</div>
+            <div class="code-tooltip-description">${documentation.description}</div>
+            <button class="code-tooltip-nav" onclick="window.docsAppInstance.navigateToDocumentation('${elementName}')">
+                View Full Documentation
+            </button>
+        `;
+        
+        // Position tooltip near the clicked indicator
+        const indicator = document.querySelector(`[data-line="${lineNumber}"] .code-indicator`);
+        if (indicator) {
+            const rect = indicator.getBoundingClientRect();
+            tooltip.style.position = 'fixed';
+            tooltip.style.left = (rect.left - 250) + 'px';
+            tooltip.style.top = (rect.top - 10) + 'px';
+            
+            document.body.appendChild(tooltip);
+            
+            // Remove tooltip after 5 seconds or on click outside
+            setTimeout(() => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            }, 5000);
+            
+            // Remove on click outside
+            document.addEventListener('click', function removeTooltip(e) {
+                if (!tooltip.contains(e.target) && e.target !== indicator) {
+                    if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                    document.removeEventListener('click', removeTooltip);
+                }
+            });
+        }
+    }
+
+    extractElementNameFromLine(line) {
+        // Extract the main element name from a line of code
+        const trimmedLine = line.trim();
+        
+        if (trimmedLine.match(/^function\s+\w+/)) {
+            return this.extractFunctionName(trimmedLine);
+        }
+        if (trimmedLine.match(/^class\s+\w+/)) {
+            return this.extractClassName(trimmedLine);
+        }
+        if (trimmedLine.match(/^const\s+\w+\s*=/)) {
+            return this.extractObjectName(trimmedLine);
+        }
+        
+        return null;
+    }
+
+    navigateToDocumentation(elementName) {
+        // Remove any existing tooltips
+        document.querySelectorAll('.code-tooltip').forEach(tooltip => {
+            tooltip.parentNode.removeChild(tooltip);
+        });
+        
+        // Navigate to API reference and show the specific element
+        this.showSection('api-reference');
+        setTimeout(() => {
+            this.showItemDetails(elementName, this.codeStructure[elementName]);
+        }, 100);
+    }
+
+    setupSourceCodeControls() {
+        const toggleIndicatorsBtn = document.getElementById('toggle-indicators');
+        const collapseAllBtn = document.getElementById('collapse-all');
+        const expandAllBtn = document.getElementById('expand-all');
+        
+        if (toggleIndicatorsBtn) {
+            toggleIndicatorsBtn.addEventListener('click', () => {
+                const indicators = document.querySelectorAll('.code-indicator');
+                const isVisible = indicators[0]?.style.opacity !== '0';
+                
+                indicators.forEach(indicator => {
+                    indicator.style.opacity = isVisible ? '0' : '';
+                });
+                
+                this.showToast(isVisible ? 'Indicators hidden' : 'Indicators shown', 'info');
+            });
+        }
+        
+        if (collapseAllBtn) {
+            collapseAllBtn.addEventListener('click', () => {
+                // Future feature: collapse code blocks
+                this.showToast('Collapse functionality coming soon', 'info');
+            });
+        }
+        
+        if (expandAllBtn) {
+            expandAllBtn.addEventListener('click', () => {
+                // Future feature: expand code blocks
+                this.showToast('Expand functionality coming soon', 'info');
+            });
+        }
+    }
+
+    copySourceCode() {
+        const sourceCode = document.getElementById('source-code-content').textContent;
+        navigator.clipboard.writeText(sourceCode).then(() => {
+            this.showToast('Source code copied to clipboard', 'success');
+        });
+    }
+
+    downloadSource() {
+        const sourceCode = document.getElementById('source-code-content').textContent;
+        const blob = new Blob([sourceCode], { type: 'text/javascript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'global.js';
+        a.click();
+        URL.revokeObjectURL(url);
+        this.showToast('Source code download started', 'success');
+    }
+
+    escapeForAttribute(str) {
+        return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
     }
 }
 

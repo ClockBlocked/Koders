@@ -139,6 +139,161 @@
             background: var(--secondary);
         }
 
+        /* Tab styles */
+        .docs-tab {
+            transition: all 0.2s ease;
+        }
+        
+        .docs-tab.active {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .tab-content {
+            transition: opacity 0.3s ease;
+        }
+
+        /* GitHub Canvas-style syntax highlighting */
+        .language-javascript {
+            background: var(--code-bg) !important;
+            color: #adbac7 !important;
+        }
+
+        /* GitHub Dark Dimmed Code Colors */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #768390 !important;
+            font-style: italic;
+        }
+
+        .token.punctuation {
+            color: #adbac7 !important;
+        }
+
+        .token.property,
+        .token.tag,
+        .token.boolean,
+        .token.number,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #6cb6ff !important;
+        }
+
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #96d0ff !important;
+        }
+
+        .token.operator,
+        .token.entity,
+        .token.url,
+        .language-css .token.string,
+        .style .token.string {
+            color: #adbac7 !important;
+        }
+
+        .token.atrule,
+        .token.attr-value,
+        .token.keyword {
+            color: #f47067 !important;
+        }
+
+        .token.function,
+        .token.class-name {
+            color: #dcbdfb !important;
+        }
+
+        .token.regex,
+        .token.important,
+        .token.variable {
+            color: #f69d50 !important;
+        }
+
+        /* Source code container styles */
+        #source-code-container {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #line-numbers {
+            user-select: none;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Code indicators */
+        .code-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .code-indicator.object {
+            background: #539bf5;
+        }
+
+        .code-indicator.function {
+            background: #3fb950;
+        }
+
+        .code-indicator.class {
+            background: #da3633;
+        }
+
+        .code-indicator.array {
+            background: #ab7df8;
+        }
+
+        .code-indicator:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* Code indicator tooltips */
+        .indicator-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            margin-bottom: 5px;
+        }
+
+        .indicator-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: var(--border);
+        }
+
+        .code-indicator:hover .indicator-tooltip {
+            opacity: 1;
+        }
+
         .method-badge {
             display: inline-flex;
             align-items: center;
@@ -321,7 +476,7 @@
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                         <div class="glass rounded-xl p-6 hover:border-blue-500/50 transition-all cursor-pointer" data-section="getting-started">
                             <div class="text-blue-500 text-2xl mb-3">
                                 <i class="fas fa-rocket"></i>
@@ -344,6 +499,14 @@
                             </div>
                             <h3 class="text-lg font-semibold mb-2">Examples</h3>
                             <p class="text-slate-400 text-sm">Code examples and tutorials</p>
+                        </div>
+                        
+                        <div class="glass rounded-xl p-6 hover:border-orange-500/50 transition-all cursor-pointer" data-section="source-code">
+                            <div class="text-orange-500 text-2xl mb-3">
+                                <i class="fas fa-file-code"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Source Code</h3>
+                            <p class="text-slate-400 text-sm">Interactive source code viewer</p>
                         </div>
                     </div>
 
@@ -368,9 +531,77 @@
                     </div>
                 </section>
 
-                <!-- Content Area -->
-                <section id="content-area" class="hidden">
-                    <!-- This will be dynamically populated -->
+                <!-- Tab Navigation -->
+                <section class="mb-8">
+                    <div class="border-b border-slate-700">
+                        <nav class="flex space-x-8" aria-label="Tabs">
+                            <button id="tab-documentation" class="docs-tab active py-2 px-1 border-b-2 border-primary font-medium text-sm text-primary whitespace-nowrap" data-tab="documentation">
+                                <i class="fas fa-book mr-2"></i>Documentation
+                            </button>
+                            <button id="tab-source-code" class="docs-tab py-2 px-1 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 hover:border-slate-300 whitespace-nowrap" data-tab="source-code">
+                                <i class="fas fa-code mr-2"></i>Source Code
+                            </button>
+                        </nav>
+                    </div>
+                </section>
+
+                <!-- Documentation Tab Content -->
+                <section id="documentation-tab-content" class="tab-content">
+                    <!-- Content Area -->
+                    <section id="content-area" class="hidden">
+                        <!-- This will be dynamically populated -->
+                    </section>
+                </section>
+
+                <!-- Source Code Tab Content -->
+                <section id="source-code-tab-content" class="tab-content hidden">
+                    <div class="glass rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-bold text-primary mb-2">global.js Source Code</h2>
+                                <p class="text-slate-400">Full source code with interactive documentation indicators</p>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-sm text-slate-400">
+                                    <span class="font-medium">5,493</span> lines
+                                </div>
+                                <button id="copy-source-code" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                    <i class="fas fa-copy mr-2"></i>Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Source Code Viewer -->
+                        <div class="relative">
+                            <div class="absolute top-4 right-4 z-10">
+                                <div class="flex items-center space-x-2">
+                                    <button id="toggle-line-numbers" class="bg-slate-800/80 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs transition-colors">
+                                        <i class="fas fa-hashtag mr-1"></i>Lines
+                                    </button>
+                                    <button id="toggle-indicators" class="bg-slate-800/80 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs transition-colors">
+                                        <i class="fas fa-info-circle mr-1"></i>Indicators
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Code Container -->
+                            <div id="source-code-container" class="bg-code-bg border border-code-border rounded-lg overflow-hidden">
+                                <div class="flex">
+                                    <!-- Line Numbers -->
+                                    <div id="line-numbers" class="bg-slate-800/30 border-r border-slate-700 px-4 py-4 text-slate-500 text-sm font-mono select-none">
+                                        <!-- Will be populated dynamically -->
+                                    </div>
+                                    
+                                    <!-- Code Content -->
+                                    <div class="flex-1 overflow-x-auto">
+                                        <pre id="source-code-display" class="p-4 text-sm font-mono leading-relaxed language-javascript"><code id="source-code-content">
+// Loading global.js source code...
+                                        </code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </div>
         </main>
