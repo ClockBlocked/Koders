@@ -35,114 +35,229 @@ class AppState {
     this.currentNotificationTimeout = null;
     this.siteMapInstance = null;
     this.homePageManagerInstance = null;
+    // Initialize favorites and queue as properties
+    this.favorites = {
+      songs: new Set(),
+      artists: new Set(),
+      albums: new Set()
+    };
+    this.queue = {
+      items: []
+    };
   }
-
-favorites = {
-  songs: new Set(),
-  artists: new Set(),
-  albums: new Set(),
-
-  add: (type, id) => {
-    appState.favorites[type].add(id);
-    appState.favorites.save(type);
-    appState.favorites.updateIcon(type, id, true);
-    const itemName = type === "songs" ? "song" : type.slice(0, -1);
-    notifications.show(`Added ${itemName} to favorites`, NOTIFICATION_TYPES.SUCCESS);
-  },
-
-  remove: (type, id) => {
-    appState.favorites[type].delete(id);
-    appState.favorites.save(type);
-    appState.favorites.updateIcon(type, id, false);
-    const itemName = type === "songs" ? "song" : type.slice(0, -1);
-    notifications.show(`Removed ${itemName} from favorites`, NOTIFICATION_TYPES.INFO);
-  },
-
-  toggle: (type, id) => {
-    if (appState.favorites[type].has(id)) {
-      appState.favorites.remove(type, id);
-      return false;
-    } else {
-      appState.favorites.add(type, id);
-      return true;
-    }
-  },
-
-  has: (type, id) => appState.favorites[type].has(id),
-
-  save: (type) => {
-    const key = type === "songs" ? STORAGE_KEYS.FAVORITE_SONGS : type === "artists" ? STORAGE_KEYS.FAVORITE_ARTISTS : STORAGE_KEYS.FAVORITE_ALBUMS;
-    storage.save(key, Array.from(appState.favorites[type]));
-  },
-
-  updateIcon: (type, id, isFavorite) => {
-    const icons = document.querySelectorAll(`[data-favorite-${type}="${id}"]`);
-    icons.forEach((icon) => {
-      icon.classList.toggle("favorited", isFavorite);
-      icon.classList.toggle(CLASSES.active, isFavorite);
-      icon.setAttribute("aria-pressed", isFavorite);
-      if (type === "songs") {
-        const heartIcon = icon.querySelector("svg");
-        if (heartIcon) {
-          heartIcon.style.color = isFavorite ? "#ef4444" : "";
-          heartIcon.style.fill = isFavorite ? "currentColor" : "none";
-        }
-      }
-    });
-    if (type === "songs" && appState.currentSong && appState.currentSong.id === id) {
-      ui.updateFavoriteButton();
-    }
-  },
-};
-
-queue = {
-  items: [],
-
-  add: (song, position = null) => {
-    if (position !== null) {
-      this.queue.items.splice(position, 0, song);
-    } else {
-      this.queue.items.push(song);
-    }
-    
-    storage.save(STORAGE_KEYS.QUEUE, this.queue.items);
-    ui.updateCounts();
-    notifications.show(`Added "${song.title}" to queue`);
-  },
-
-  remove: (index) => {
-    if (index >= 0 && index < this.queue.items.length) {
-      const removed = this.queue.items.splice(index, 1)[0];
-      storage.save(STORAGE_KEYS.QUEUE, this.queue.items);
-      ui.updateCounts();
-      return removed;
-    }
-    return null;
-  },
-
-  clear: () => {
-    this.queue.items = [];
-    storage.save(STORAGE_KEYS.QUEUE, this.queue.items);
-    ui.updateCounts();
-  },
-
-  getNext: () => {
-    return this.queue.items.length > 0 ? this.queue.remove(0) : null;
-  },
-
-  get: () => this.queue.items,
-
-  playAt: (index) => {
-    const song = this.queue.remove(index);
-    if (song) {
-      player.playSong(song);
-    }
-  },
-};
-
 }
 
 const appState = new AppState();
+
+// Library management - user's personal music collection and preferences  
+const library = {
+  favorites: {
+    add: (type, id) => {
+      appState.favorites[type].add(id);
+      library.favorites.save(type);
+      library.favorites.updateIcon(type, id, true);
+      const itemName = type === "songs" ? "song" : type.slice(0, -1);
+      notifications.show(`Added ${itemName} to favorites`, NOTIFICATION_TYPES.SUCCESS);
+    },
+
+    remove: (type, id) => {
+      appState.favorites[type].delete(id);
+      library.favorites.save(type);
+      library.favorites.updateIcon(type, id, false);
+      const itemName = type === "songs" ? "song" : type.slice(0, -1);
+      notifications.show(`Removed ${itemName} from favorites`, NOTIFICATION_TYPES.INFO);
+    },
+
+    toggle: (type, id) => {
+      if (library.favorites.has(type, id)) {
+        library.favorites.remove(type, id);
+        return false;
+      } else {
+        library.favorites.add(type, id);
+        return true;
+      }
+    },
+
+    has: (type, id) => appState.favorites[type].has(id),
+
+    save: (type) => {
+      const key = type === "songs" ? STORAGE_KEYS.FAVORITE_SONGS : type === "artists" ? STORAGE_KEYS.FAVORITE_ARTISTS : STORAGE_KEYS.FAVORITE_ALBUMS;
+      storage.save(key, Array.from(appState.favorites[type]));
+    },
+
+    updateIcon: (type, id, isFavorite) => {
+      const icons = document.querySelectorAll(`[data-favorite-${type}="${id}"]`);
+      icons.forEach((icon) => {
+        icon.classList.toggle("favorited", isFavorite);
+        icon.classList.toggle(CLASSES.active, isFavorite);
+        icon.setAttribute("aria-pressed", isFavorite);
+        if (type === "songs") {
+          const heartIcon = icon.querySelector("svg");
+          if (heartIcon) {
+            heartIcon.style.color = isFavorite ? "#ef4444" : "";
+            heartIcon.style.fill = isFavorite ? "currentColor" : "none";
+          }
+        }
+      });
+      if (type === "songs" && appState.currentSong && appState.currentSong.id === id) {
+        ui.updateFavoriteButton();
+      }
+    }
+  },
+
+  queue: {
+    add: (song, position = null) => {
+      if (position !== null) {
+        appState.queue.items.splice(position, 0, song);
+      } else {
+        appState.queue.items.push(song);
+      }
+      
+      storage.save(STORAGE_KEYS.QUEUE, appState.queue.items);
+      ui.updateCounts();
+      notifications.show(`Added "${song.title}" to queue`);
+    },
+
+    remove: (index) => {
+      if (index >= 0 && index < appState.queue.items.length) {
+        const removed = appState.queue.items.splice(index, 1)[0];
+        storage.save(STORAGE_KEYS.QUEUE, appState.queue.items);
+        ui.updateCounts();
+        return removed;
+      }
+      return null;
+    },
+
+    clear: () => {
+      appState.queue.items = [];
+      storage.save(STORAGE_KEYS.QUEUE, appState.queue.items);
+      ui.updateCounts();
+    },
+
+    getNext: () => {
+      return appState.queue.items.length > 0 ? library.queue.remove(0) : null;
+    },
+
+    get: () => appState.queue.items,
+
+    playAt: (index) => {
+      const song = library.queue.remove(index);
+      if (song) {
+        player.playSong(song);
+      }
+    }
+  },
+
+  playlists: {
+    add: (name) => {
+      if (!name || !name.trim()) {
+        notifications.show("Please enter a playlist name", NOTIFICATION_TYPES.WARNING);
+        return null;
+      }
+
+      const playlist = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        songs: [],
+        created: new Date().toISOString(),
+        description: "",
+        cover: null,
+      };
+
+      appState.playlists.push(playlist);
+      storage.save(STORAGE_KEYS.PLAYLISTS, appState.playlists);
+
+      if (typeof homePage?.renderPlaylists === "function") {
+        homePage.renderPlaylists();
+      }
+
+      notifications.show(`Created playlist "${playlist.name}"`, NOTIFICATION_TYPES.SUCCESS);
+      return playlist;
+    },
+
+    addSong: (playlistId, song) => {
+      const playlist = appState.playlists.find((p) => p.id === playlistId);
+      if (!playlist) {
+        notifications.show("Playlist not found", NOTIFICATION_TYPES.ERROR);
+        return false;
+      }
+
+      const exists = playlist.songs.some((s) => s.id === song.id);
+      if (exists) {
+        notifications.show("Song already in playlist", NOTIFICATION_TYPES.WARNING);
+        return false;
+      }
+
+      playlist.songs.push(song);
+      storage.save(STORAGE_KEYS.PLAYLISTS, appState.playlists);
+
+      notifications.show(`Added "${song.title}" to "${playlist.name}"`, NOTIFICATION_TYPES.SUCCESS);
+      return true;
+    },
+
+    removeSong: (playlistId, songId) => {
+      const playlist = appState.playlists.find((p) => p.id === playlistId);
+      if (!playlist) return false;
+
+      const initialLength = playlist.songs.length;
+      playlist.songs = playlist.songs.filter((s) => s.id !== songId);
+
+      if (playlist.songs.length < initialLength) {
+        storage.save(STORAGE_KEYS.PLAYLISTS, appState.playlists);
+        notifications.show("Song removed from playlist", NOTIFICATION_TYPES.INFO);
+        return true;
+      }
+
+      return false;
+    },
+
+    play: (playlistId) => {
+      const playlist = appState.playlists.find((p) => p.id === playlistId);
+      if (!playlist || playlist.songs.length === 0) {
+        notifications.show("Playlist is empty", NOTIFICATION_TYPES.WARNING);
+        return;
+      }
+
+      const firstSong = playlist.songs[0];
+      player.playSong(firstSong);
+    },
+
+    create: async () => {
+      const name = prompt("Enter playlist name:");
+      return library.playlists.add(name);
+    },
+
+    delete: (playlistId) => {
+      const playlistIndex = appState.playlists.findIndex((p) => p.id === playlistId);
+      if (playlistIndex === -1) {
+        notifications.show("Playlist not found", NOTIFICATION_TYPES.ERROR);
+        return false;
+      }
+
+      const playlist = appState.playlists[playlistIndex];
+      const confirmDelete = confirm(`Delete playlist "${playlist.name}"?`);
+      
+      if (confirmDelete) {
+        appState.playlists.splice(playlistIndex, 1);
+        storage.save(STORAGE_KEYS.PLAYLISTS, appState.playlists);
+        
+        if (typeof homePage?.renderPlaylists === "function") {
+          homePage.renderPlaylists();
+        }
+        
+        notifications.show(`Deleted playlist "${playlist.name}"`, NOTIFICATION_TYPES.INFO);
+        return true;
+      }
+      
+      return false;
+    }
+  }
+};
+
+// Create backward compatibility aliases
+const favorites = library.favorites;
+const queue = library.queue;
+const playlists = library.playlists;
 
 
 
@@ -4748,747 +4863,4 @@ if (window.music) {
 
 
 
-// Not sure if i can completely delete this yet
-//
-//
-//
-//
-//
-/**
-const eventHandlers = {
-  init: () => {
-    eventHandlers.bindMenus();
-    eventHandlers.bindControls();
-    eventHandlers.bindPopups();
-    eventHandlers.bindProgress();
-    eventHandlers.bindKeyboard();
-    eventHandlers.bindDocument();
-  },
-
-  bindControls: () => {
-    const controlElements = {
-      [IDS.nowPlayingArea]: musicPlayer.toggle,
-    };
-
-    Object.entries(controlElements).forEach(([id, handler]) => {
-      const element = $byId(id);
-      if (element) {
-        element.removeEventListener("click", handler);
-        element.addEventListener("click", (e) => {
-          e.stopPropagation();
-          try {
-            handler();
-          } catch (error) {}
-        });
-      }
-    });
-
-    const navbarPlayPause = $bySelector(NAVBAR.playPause);
-    if (navbarPlayPause) {
-      navbarPlayPause.removeEventListener("click", player.toggle);
-      navbarPlayPause.addEventListener("click", (e) => {
-        e.stopPropagation();
-        player.toggle();
-      });
-    }
-
-    const navbarPrevious = $bySelector(NAVBAR.previous);
-    if (navbarPrevious) {
-      navbarPrevious.removeEventListener("click", controls.previous);
-      navbarPrevious.addEventListener("click", (e) => {
-        e.stopPropagation();
-        controls.previous();
-      });
-    }
-
-    const navbarNext = $bySelector(NAVBAR.next);
-    if (navbarNext) {
-      navbarNext.removeEventListener("click", controls.next);
-      navbarNext.addEventListener("click", (e) => {
-        e.stopPropagation();
-        controls.next();
-      });
-    }
-
-    const nowPlayingArea = $bySelector(NAVBAR.nowPlaying);
-    if (nowPlayingArea) {
-      nowPlayingArea.removeEventListener("click", musicPlayer.toggle);
-      nowPlayingArea.addEventListener("click", (e) => {
-        e.stopPropagation();
-        musicPlayer.toggle();
-      });
-    }
-  },
-
-  bindMenus: () => {
-    const menuElements = {
-      [IDS.menuTrigger]: dropdown.toggle,
-      [IDS.dropdownClose]: dropdown.close,
-      [IDS.willHideMenu]: dropdown.close,
-    };
-
-    Object.entries(menuElements).forEach(([id, handler]) => {
-      const element = $byId(id);
-      if (element) {
-        element.removeEventListener("click", handler);
-        element.addEventListener("click", handler);
-      }
-    });
-
-    const menuActions = {
-      [IDS.favoriteSongs]: () => {
-        dropdown.close();
-        views.showFavoriteSongs();
-      },
-      [IDS.favoriteArtists]: () => {
-        dropdown.close();
-        views.showFavoriteArtists();
-      },
-      [IDS.recentlyPlayed]: () => {
-        dropdown.close();
-        musicPlayer.open();
-        setTimeout(() => musicPlayer.switchTab("recent"), 50);
-      },
-      [IDS.queueView]: () => {
-        dropdown.close();
-        musicPlayer.open();
-        setTimeout(() => musicPlayer.switchTab("queue"), 50);
-      },
-      [IDS.createPlaylist]: () => {
-        dropdown.close();
-        playlists.create();
-      },
-      [IDS.shuffleAll]: controls.shuffle.all,
-      [IDS.themeToggle]: theme.toggle,
-    };
-
-    if (IDS.favoriteAlbums) {
-      menuActions[IDS.favoriteAlbums] = () => {
-        dropdown.close();
-        views.showFavoriteAlbums();
-      };
-    }
-
-    Object.entries(menuActions).forEach(([id, handler]) => {
-      const element = $byId(id);
-      if (element) {
-        element.removeEventListener("click", handler);
-        element.addEventListener("click", handler);
-      }
-    });
-  },
-
-  bindPopups: () => {
-  const popupControls = {
-    [MUSIC_PLAYER.close]: musicPlayer.close,
-    [MUSIC_PLAYER.play]: player.toggle,
-    [MUSIC_PLAYER.previous]: controls.previous,
-    [MUSIC_PLAYER.next]: controls.next,
-    [MUSIC_PLAYER.shuffle]: controls.shuffle.toggle,
-    [MUSIC_PLAYER.repeat]: controls.repeat.toggle,
-    [MUSIC_PLAYER.favoriteBtn]: () => {
-      if (appState.currentSong) {
-        const isFavorite = appState.favorites.toggle("songs", appState.currentSong.id);
-        ui.updateFavoriteButton();
-      }
-    },
-  };
-
-  Object.entries(popupControls).forEach(([selector, handler]) => {
-    const elements = document.querySelectorAll(selector);
-    elements.forEach(element => {
-      if (element) {
-        element.removeEventListener("click", handler);
-        element.addEventListener("click", (e) => {
-          e.stopPropagation();
-          handler();
-        });
-      }
-    });
-  });
-
-  // Bind tab switching
-  document.querySelectorAll(".tab").forEach((tab) => {
-    tab.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const tabName = tab.dataset.tab;
-      if (tabName) {
-        musicPlayer.switchTab(tabName);
-      }
-    });
-  });
-  },
-
-  bindProgress: () => {
-    const progressBar = $bySelector(MUSIC_PLAYER.progressBar);
-    if (!progressBar) return;
-
-    const handleProgressClick = (e) => {
-      if (!appState.currentSong || !appState.audio || !appState.duration) return;
-
-      const rect = progressBar.getBoundingClientRect();
-      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const newTime = percent * appState.duration;
-      
-      if (!isNaN(newTime) && isFinite(newTime)) {
-        controls.seekTo(newTime);
-      }
-    };
-
-    progressBar.removeEventListener("click", handleProgressClick);
-    progressBar.addEventListener("click", handleProgressClick);
-
-    let isDragging = false;
-
-    const startDrag = (e) => {
-      if (!appState.currentSong) return;
-      isDragging = true;
-      document.body.style.userSelect = "none";
-      e.preventDefault();
-    };
-
-    const onDrag = (e) => {
-      if (!isDragging || !appState.currentSong || !appState.audio || !appState.duration) return;
-
-      const rect = progressBar.getBoundingClientRect();
-      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const newTime = percent * appState.duration;
-
-      if (!isNaN(newTime) && isFinite(newTime)) {
-        controls.seekTo(newTime);
-      }
-    };
-
-    const endDrag = () => {
-      isDragging = false;
-      document.body.style.userSelect = "";
-    };
-
-    progressBar.removeEventListener("mousedown", startDrag);
-    progressBar.addEventListener("mousedown", startDrag);
-    document.removeEventListener("mousemove", onDrag);
-    document.addEventListener("mousemove", onDrag);
-    document.removeEventListener("mouseup", endDrag);
-    document.addEventListener("mouseup", endDrag);
-  },
-
-  bindKeyboard: () => {
-    document.addEventListener("keydown", (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-
-      const shortcuts = {
-        " ": (e) => {
-          e.preventDefault();
-          player.toggle();
-        },
-        ArrowLeft: (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            controls.previous();
-          }
-        },
-        ArrowRight: (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            controls.next();
-          }
-        },
-        KeyN: (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            musicPlayer.open();
-          }
-        },
-        KeyM: (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            dropdown.toggle();
-          }
-        },
-        KeyS: (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            controls.shuffle.toggle();
-          }
-        },
-        KeyR: (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            controls.repeat.toggle();
-          }
-        },
-        Escape: () => {
-          musicPlayer.close();
-          dropdown.close();
-        },
-      };
-
-      const handler = shortcuts[e.code] || shortcuts[e.key];
-      if (handler) {
-        handler(e);
-      }
-    });
-  },
-
-  bindDocument: () => {
-    document.addEventListener("click", (e) => {
-      const dropdownMenu = $byId(IDS.dropdownMenu);
-      const menuTrigger = $byId(IDS.menuTrigger);
-      if (dropdownMenu && !dropdownMenu.contains(e.target) && !menuTrigger?.contains(e.target)) {
-        dropdown.close();
-      }
-
-      const musicPlayer = document.getElementById('musicPlayer');
-      const nowPlayingArea = $bySelector(NAVBAR.nowPlaying);
-      if (appState.isPopupVisible && musicPlayer && !musicPlayer.contains(e.target) && !nowPlayingArea?.contains(e.target)) {
-        musicPlayer.close();
-      }
-
-      const navItem = e.target.closest("[data-nav]");
-      if (navItem) {
-        e.preventDefault();
-        const navType = navItem.dataset.nav;
-        dropdown.close();
-
-        if (appState.siteMapInstance) {
-          const navHandlers = {
-            [ROUTES.HOME]: () => appState.siteMapInstance.navigateTo(ROUTES.HOME),
-            [ROUTES.ALL_ARTISTS]: () => appState.siteMapInstance.navigateTo(ROUTES.ALL_ARTISTS),
-            [ROUTES.ARTIST]: () => {
-              const artistName = navItem.dataset.artist;
-              if (artistName)
-                appState.siteMapInstance.navigateTo(ROUTES.ARTIST, {
-                  artist: artistName,
-                });
-            },
-            [ROUTES.ALBUM]: () => {
-              const artist = navItem.dataset.artist;
-              const album = navItem.dataset.album;
-              if (artist && album)
-                appState.siteMapInstance.navigateTo(ROUTES.ALBUM, {
-                  artist,
-                  album,
-                });
-            },
-          };
-
-          if (navHandlers[navType]) navHandlers[navType]();
-        }
-      }
-
-      if (e.target.closest("#" + IDS.globalSearchTrigger)) {
-        e.preventDefault();
-        dropdown.close();
-        if (appState.siteMapInstance) appState.siteMapInstance.openSearchDialog();
-      }
-    });
-  },
-
-  bindControlEvents: () => {
-    const musicPlayerControls = {
-      [IDS.playBtn]: player.toggle,
-      [IDS.prevBtn]: controls.previous,
-      [IDS.nextBtn]: controls.next,
-      [IDS.shuffleBtn]: controls.shuffle.toggle,
-      [IDS.repeatBtn]: controls.repeat.toggle,
-      [IDS.favoriteBtn]: () => {
-        if (appState.currentSong) {
-          appState.favorites.toggle("songs", appState.currentSong.id);
-        }
-      },
-    };
-
-    Object.entries(musicPlayerControls).forEach(([id, handler]) => {
-      const element = $byId(id);
-      if (element) {
-        element.removeEventListener("click", handler);
-        element.addEventListener("click", (e) => {
-          e.stopPropagation();
-          handler();
-        });
-      }
-    });
-  },
-};
-**/
-
-
-/**
-const musicPlayer = {
-  open() {
-    const el = $byId(IDS.musicPlayer);
-    if (!el) return;
-    el.classList.add(CLASSES.show);
-    appState.isPopupVisible = true;
-    this.startInactivityTimer();
-    this.updateTabContent(appState.currentTab);
-  },
-  close() {
-    const el = $byId(IDS.musicPlayer);
-    if (!el) return;
-    el.classList.remove(CLASSES.show);
-    el.style.transform = "";
-    el.classList.remove("dragging");
-    appState.isPopupVisible = false;
-    this.clearInactivityTimer();
-  },
-  toggle() {
-    const el = $byId(IDS.musicPlayer);
-    if (!el) return;
-    if (el.classList.contains(CLASSES.show)) this.close(); else this.open();
-  },
-  switchTab(tabName) {
-    appState.currentTab = tabName;
-    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
-    document.querySelectorAll(".content").forEach(c => c.classList.toggle("active", c.dataset.tab === tabName));
-    this.updateTabContent(tabName);
-    this.startInactivityTimer();
-  },
-  updateTabContent(tabName) {
-    if (tabName === "recent") this.updateRecentTab();
-    else if (tabName === "queue") this.updateQueueTab();
-  },
-  updateQueueTab() {
-    const queueList = $byId("queueList");
-    if (!queueList) return;
-    const queueContainer = queueList.parentElement;
-    const emptyState = queueContainer.querySelector(".empty");
-    if (appState.queue.items.length === 0) {
-      if (emptyState) emptyState.style.display = "flex";
-      queueList.innerHTML = "";
-      return;
-    }
-    if (emptyState) emptyState.style.display = "none";
-    queueList.innerHTML = appState.queue.items.map((song, index) => `
-      <li class="queue-item" data-index="${index}" data-song='${JSON.stringify(song).replace(/"/g, "&quot;")}'>
-        <div class="queue-item-content">
-          <img src="${utils.getAlbumImageUrl(song.album)}" alt="${song.title}" class="queue-item-cover">
-          <div class="queue-item-info">
-            <div class="queue-item-title">${song.title}</div>
-            <div class="queue-item-artist">${song.artist}</div>
-          </div>
-          <div class="queue-item-actions">
-            <button class="queue-item-play" data-action="play" title="Play now">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-              </svg>
-            </button>
-            <button class="queue-item-remove" data-action="remove" title="Remove from queue">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </li>
-    `).join("");
-    queueList.querySelectorAll(".queue-item").forEach(item => {
-      const index = parseInt(item.dataset.index);
-      const playBtn = item.querySelector('[data-action="play"]');
-      if (playBtn) playBtn.addEventListener("click", e => { e.stopPropagation(); appState.queue.playAt(index); });
-      const removeBtn = item.querySelector('[data-action="remove"]');
-      if (removeBtn) removeBtn.addEventListener("click", e => { e.stopPropagation(); appState.queue.remove(index); musicPlayer.updateQueueTab(); ui.updateCounts(); });
-      item.addEventListener("click", () => appState.queue.playAt(index));
-    });
-  },
-  updateRecentTab() {
-    const recentList = $byId("recentList");
-    if (!recentList) return;
-    const recentContainer = recentList.parentElement;
-    const emptyState = recentContainer.querySelector(".empty");
-    if (!appState.recentlyPlayed || appState.recentlyPlayed.length === 0) {
-      if (emptyState) emptyState.style.display = "flex";
-      recentList.innerHTML = "";
-      return;
-    }
-    if (emptyState) emptyState.style.display = "none";
-    recentList.innerHTML = appState.recentlyPlayed.slice(0, 20).map((song, index) => `
-      <li class="recent-item" data-index="${index}" data-song='${JSON.stringify(song).replace(/"/g, "&quot;")}'>
-        <div class="recent-item-content">
-          <img src="${utils.getAlbumImageUrl(song.album)}" alt="${song.title}" class="recent-item-cover">
-          <div class="recent-item-info">
-            <div class="recent-item-title">${song.title}</div>
-            <div class="recent-item-artist">${song.artist}</div>
-          </div>
-          <div class="recent-item-actions">
-            <button class="recent-item-play" data-action="play" title="Play now">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-              </svg>
-            </button>
-            <button class="recent-item-queue" data-action="queue" title="Add to queue">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </li>
-    `).join("");
-    recentList.querySelectorAll(".recent-item").forEach(item => {
-      const songData = JSON.parse(item.dataset.song);
-      const playBtn = item.querySelector('[data-action="play"]');
-      if (playBtn) playBtn.addEventListener("click", e => { e.stopPropagation(); player.playSong(songData); });
-      const queueBtn = item.querySelector('[data-action="queue"]');
-      if (queueBtn) queueBtn.addEventListener("click", e => { e.stopPropagation(); appState.queue.add(songData); notifications.show(`Added "${songData.title}" to queue`); });
-      item.addEventListener("click", () => player.playSong(songData));
-    });
-  },
-  startInactivityTimer() {
-    this.clearInactivityTimer();
-    if (appState.currentTab !== "playing") {
-      appState.inactivityTimer = setTimeout(() => this.switchTab("playing"), 10000);
-    }
-  },
-  clearInactivityTimer() {
-    if (appState.inactivityTimer) {
-      clearTimeout(appState.inactivityTimer);
-      appState.inactivityTimer = null;
-    }
-  },
-  threshold: 120,
-  dragState: { startY: 0, lastY: 0, dragging: false },
-  onHandleDown(e) {
-    const el = $byId(IDS.musicPlayer);
-    if (!el || !el.classList.contains(CLASSES.show)) return;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    this.dragState.startY = y;
-    this.dragState.lastY = y;
-    this.dragState.dragging = true;
-    el.classList.add("dragging");
-  },
-  onHandleMove(e) {
-    if (!this.dragState.dragging) return;
-    const el = $byId(IDS.musicPlayer);
-    if (!el) return;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    const delta = Math.max(0, y - this.dragState.startY);
-    this.dragState.lastY = y;
-    el.style.transform = `translateY(${delta}px)`;
-    if (e.cancelable) e.preventDefault();
-  },
-  onHandleUp() {
-    if (!this.dragState.dragging) return;
-    const el = $byId(IDS.musicPlayer);
-    if (!el) return;
-    const current = parseFloat((el.style.transform.match(/translateY\(([-\d.]+)px\)/) || [0, 0])[1]);
-    el.classList.remove("dragging");
-    if (current >= this.threshold) {
-      this.close();
-    } else {
-      el.style.transform = "";
-    }
-    this.dragState.dragging = false;
-  },
-  init() {
-    const handle = $byId("mpHandle");
-    if (!handle) return;
-    handle.addEventListener("mousedown", this.onHandleDown.bind(this));
-    handle.addEventListener("touchstart", this.onHandleDown.bind(this), { passive: false });
-    window.addEventListener("mousemove", this.onHandleMove.bind(this), { passive: false });
-    window.addEventListener("touchmove", this.onHandleMove.bind(this), { passive: false });
-    window.addEventListener("mouseup", this.onHandleUp.bind(this));
-    window.addEventListener("touchend", this.onHandleUp.bind(this));
-  },
-};
-**/
-
-
-/**
-const musicPlayer = {
-  open() {
-    const drawer = document.querySelector('.drawer');
-    if (!drawer) return;
-    
-    drawer.showPopover();
-    appState.isPopupVisible = true;
-    this.updateTabContent('now-playing');
-  },
-  
-  close() {
-    const drawer = document.querySelector('.drawer');
-    if (!drawer) return;
-    
-    drawer.hidePopover();
-    appState.isPopupVisible = false;
-  },
-  
-  toggle() {
-    const drawer = document.querySelector('.drawer');
-    if (!drawer) return;
-    
-    if (drawer.matches(':popover-open')) {
-      this.close();
-    } else {
-      this.open();
-    }
-  },
-  
-  switchTab(tabName) {
-    appState.currentTab = tabName;
-    
-    // Update control buttons
-    document.querySelectorAll('.controlButton').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === tabName);
-    });
-    
-    // Update content sections
-    document.querySelectorAll('.contentSection').forEach(section => {
-      section.classList.toggle('show', section.dataset.tab === tabName);
-      section.style.display = section.dataset.tab === tabName ? 'block' : 'none';
-    });
-    
-    this.updateTabContent(tabName);
-  },
-  
-  updateTabContent(tabName) {
-    if (tabName === 'recent') this.updateRecentTab();
-    else if (tabName === 'queue') this.updateQueueTab();
-  },
-  
-  updateQueueTab() {
-    const queueList = document.getElementById('queueList');
-    if (!queueList) return;
-    
-    const queueContainer = queueList.closest('.contentSection');
-    const emptyState = queueContainer.querySelector('.emptyState');
-    
-    if (appState.queue.items.length === 0) {
-      if (emptyState) emptyState.style.display = 'flex';
-      queueList.innerHTML = '';
-      return;
-    }
-    
-    if (emptyState) emptyState.style.display = 'none';
-    
-    queueList.innerHTML = appState.queue.items.map((song, index) => `
-      <div class="songItem" data-index="${index}" data-song='${JSON.stringify(song).replace(/"/g, "&quot;")}'>
-        <div class="songContent">
-          <img src="${utils.getAlbumImageUrl(song.album)}" alt="${song.title}" class="songCover">
-          <div class="songInfo">
-            <div class="songTitle">${song.title}</div>
-            <div class="artistName">${song.artist}</div>
-          </div>
-          <div class="songActions">
-            <button class="playButton" data-action="play" title="Play now">
-              <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-              </svg>
-            </button>
-            <button class="removeButton" data-action="remove" title="Remove from queue">
-              <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-    
-    // Bind events
-    queueList.querySelectorAll('.songItem').forEach(item => {
-      const index = parseInt(item.dataset.index);
-      const playBtn = item.querySelector('[data-action="play"]');
-      if (playBtn) playBtn.addEventListener('click', e => { 
-        e.stopPropagation(); 
-        appState.queue.playAt(index); 
-      });
-      
-      const removeBtn = item.querySelector('[data-action="remove"]');
-      if (removeBtn) removeBtn.addEventListener('click', e => { 
-        e.stopPropagation(); 
-        appState.queue.remove(index); 
-        musicPlayer.updateQueueTab(); 
-        ui.updateCounts(); 
-      });
-      
-      item.addEventListener('click', () => appState.queue.playAt(index));
-    });
-  },
-  
-  updateRecentTab() {
-    const recentList = document.getElementById('recentList');
-    if (!recentList) return;
-    
-    const recentContainer = recentList.closest('.contentSection');
-    const emptyState = recentContainer.querySelector('.emptyState');
-    
-    if (!appState.recentlyPlayed || appState.recentlyPlayed.length === 0) {
-      if (emptyState) emptyState.style.display = 'flex';
-      recentList.innerHTML = '';
-      return;
-    }
-    
-    if (emptyState) emptyState.style.display = 'none';
-    
-    recentList.innerHTML = appState.recentlyPlayed.slice(0, 20).map((song, index) => `
-      <div class="songItem" data-index="${index}" data-song='${JSON.stringify(song).replace(/"/g, "&quot;")}'>
-        <div class="songContent">
-          <img src="${utils.getAlbumImageUrl(song.album)}" alt="${song.title}" class="songCover">
-          <div class="songInfo">
-            <div class="songTitle">${song.title}</div>
-            <div class="artistName">${song.artist}</div>
-          </div>
-          <div class="songActions">
-            <button class="playButton" data-action="play" title="Play now">
-              <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-              </svg>
-            </button>
-            <button class="queueButton" data-action="queue" title="Add to queue">
-              <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-    
-    // Bind events
-    recentList.querySelectorAll('.songItem').forEach(item => {
-      const songData = JSON.parse(item.dataset.song);
-      const playBtn = item.querySelector('[data-action="play"]');
-      if (playBtn) playBtn.addEventListener('click', e => { 
-        e.stopPropagation(); 
-        player.playSong(songData); 
-      });
-      
-      const queueBtn = item.querySelector('[data-action="queue"]');
-      if (queueBtn) queueBtn.addEventListener('click', e => { 
-        e.stopPropagation(); 
-        appState.queue.add(songData); 
-        notifications.show(`Added "${songData.title}" to queue`); 
-      });
-      
-      item.addEventListener('click', () => player.playSong(songData));
-    });
-  },
-  
-  init() {
-    // Initialize drawer if it doesn't exist
-    if (!document.querySelector('.drawer')) {
-      this.createDrawer();
-    }
-    
-    // Bind control buttons
-    document.querySelectorAll('.controlButton').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tabName = btn.dataset.tab;
-        if (tabName) this.switchTab(tabName);
-      });
-    });
-  },
-  
-  createDrawer() {
-    // This will be replaced with your HTML
-    console.warn('Drawer HTML needs to be added to the page');
-  }
-};
-**/
-//
-//
-//
-//
-//
-//
+// Original app implementation remains as the primary event handler system
