@@ -259,6 +259,134 @@ const favorites = library.favorites;
 const queue = library.queue;
 const playlists = library.playlists;
 
+// Discovery - content suggestions and home page recommendations
+const discovery = {
+  // Get random content for suggestions
+  getRandomAlbums: (count = 6) => {
+    if (!window.music) return [];
+
+    const allAlbums = [];
+    window.music.forEach((artist) => {
+      artist.albums.forEach((album) => {
+        allAlbums.push({
+          artist: artist.artist,
+          album: album.album,
+          cover: utils.getAlbumImageUrl(album.album),
+          songs: album.songs,
+        });
+      });
+    });
+
+    const shuffled = [...allAlbums].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  },
+
+  getRandomArtists: (count = 6) => {
+    if (!window.music) return [];
+    const shuffled = [...window.music].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  },
+
+  getRandomSongs: (count = 10) => {
+    if (!window.music) return [];
+
+    const allSongs = [];
+    window.music.forEach((artist) => {
+      artist.albums.forEach((album) => {
+        album.songs.forEach((song) => {
+          allSongs.push({
+            ...song,
+            artist: artist.artist,
+            album: album.album,
+            cover: utils.getAlbumImageUrl(album.album),
+          });
+        });
+      });
+    });
+
+    const shuffled = [...allSongs].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  },
+
+  // Render discovery content sections
+  renderRandomAlbums: () => {
+    const container = $byId(IDS.randomAlbumsSection);
+    if (!container) return;
+
+    const albums = discovery.getRandomAlbums(6);
+
+    if (!albums || albums.length === 0) {
+      container.innerHTML = homePage.renderEmptyState("No albums found", "album");
+      return;
+    }
+
+    let html = `<div class="album-grid animate-fade-in">`;
+
+    albums.forEach((album, index) => {
+      html += `
+        <div class="album-card" style="animation-delay: ${index * 100}ms;" data-artist="${album.artist}" data-album="${album.album}">
+          <div style="position: relative;">
+            <img src="${utils.getAlbumImageUrl(album.album)}" alt="${album.album}" class="album-cover">
+            <div class="album-overlay">
+              <button class="album-play-btn" data-artist="${album.artist}" data-album="${album.album}">
+                ${ICONS.play}
+              </button>
+            </div>
+          </div>
+          <div class="album-info">
+            <div class="album-title">${album.album}</div>
+            <div class="album-artist" data-artist="${album.artist}">${album.artist}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+  },
+
+  renderRecentlyPlayed: () => {
+    const container = $byId(IDS.recentlyPlayedSection);
+    if (!container) return;
+
+    if (!appState.recentlyPlayed || appState.recentlyPlayed.length === 0) {
+      container.innerHTML = homePage.renderEmptyState("No recently played tracks", "music-note");
+      return;
+    }
+
+    const recentTracks = appState.recentlyPlayed.slice(0, 5);
+
+    let html = `<div class="recent-tracks animate-fade-in">`;
+
+    recentTracks.forEach((track, index) => {
+      html += `
+        <div class="recent-track" data-song='${JSON.stringify(track).replace(/"/g, "&quot;")}' style="animation-delay: ${index * 100}ms;">
+          <img src="${utils.getAlbumImageUrl(track.album)}" alt="${track.title}" class="track-art">
+          <div class="track-info">
+            <div class="track-title">${track.title}</div>
+            <div class="track-artist" data-artist="${track.artist}">${track.artist}</div>
+          </div>
+          <div class="play-button-overlay">
+            ${ICONS.play}
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+  },
+
+  // Get suggestion-based content
+  getSuggestedContent: () => {
+    return {
+      albums: discovery.getRandomAlbums(3),
+      artists: discovery.getRandomArtists(3),
+      songs: discovery.getRandomSongs(5)
+    };
+  }
+};
+
 
 
 const utils = {
@@ -2179,8 +2307,8 @@ const homePage = {
 
     homePage.addStyles();
 
-    setTimeout(() => homePage.renderRecentlyPlayed(), 100);
-    setTimeout(() => homePage.renderRandomAlbums(), 300);
+    setTimeout(() => discovery.renderRecentlyPlayed(), 100);
+    setTimeout(() => discovery.renderRandomAlbums(), 300);
     setTimeout(() => homePage.renderFavoriteArtists(), 500);
     setTimeout(() => homePage.renderPlaylists(), 700);
     setTimeout(() => homePage.renderFavoriteSongs(), 900);
@@ -2551,7 +2679,7 @@ const homePage = {
     const container = $byId(IDS.randomAlbumsSection);
     if (!container) return;
 
-    const albums = homePage.getRandomAlbums(6);
+    const albums = discovery.getRandomAlbums(6);
 
     if (!albums || albums.length === 0) {
       container.innerHTML = homePage.renderEmptyState("No albums found", "album");
