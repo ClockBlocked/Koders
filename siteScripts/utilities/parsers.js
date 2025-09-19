@@ -96,18 +96,6 @@ export function getTotalSongs(artist) {
   return artist.albums.reduce((total, album) => total + album.songs.length, 0);
 }
 
-export function parseDuration(durationStr) {
-  if (typeof durationStr !== "string") return 0;
-  let parts = durationStr.split(":").map(Number);
-  return parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) ? parts[0] * 60 + parts[1] : 0;
-}
-
-export function createElementFromHTML(htmlString) {
-  let div = document.createElement("div");
-  div.innerHTML = htmlString.trim();
-  return div.firstChild;
-}
-
 
 export function encodeURIComponent(str) {
     // Convert the input to a string if it's not already
@@ -163,38 +151,6 @@ export function encodeURIComponent(str) {
                     result += '%' + byte.toString(16).toUpperCase().padStart(2, '0');
                 }
             }
-        }
-    }
-    
-    return result;
-}
-
-// Alternative simpler version for ASCII-only characters:
-export function encodeURIComponentSimple(str) {
-    const string = String(str);
-    let result = '';
-    
-    for (let i = 0; i < string.length; i++) {
-        const char = string[i];
-        const charCode = char.charCodeAt(0);
-        
-        if (
-            (charCode >= 65 && charCode <= 90) ||
-            (charCode >= 97 && charCode <= 122) ||
-            (charCode >= 48 && charCode <= 57) ||
-            char === '-' ||
-            char === '_' ||
-            char === '.' ||
-            char === '!' ||
-            char === '~' ||
-            char === '*' ||
-            char === "'" ||
-            char === '(' ||
-            char === ')'
-        ) {
-            result += char;
-        } else {
-            result += '%' + charCode.toString(16).toUpperCase().padStart(2, '0');
         }
     }
     
