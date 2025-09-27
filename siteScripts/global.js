@@ -241,44 +241,6 @@ const utils = {
     return "data:image/svg+xml;base64," + btoa(svg);
   },
 
-/** 
-  getSimilarArtists: (artistRef, { limit = 12, includeSelf = false } = {}) => {
-  const lib = Array.isArray(window.music) ? window.music : (Array.isArray(typeof music !== 'undefined' ? music : null) ? music : []);
-  if (!Array.isArray(lib) || !lib.length) return [];
-  const target = typeof artistRef === 'string' ? lib.find(a => a.artist === artistRef) : artistRef;
-  if (!target || !target.artist) return [];
-  const direct = Array.isArray(target.similar) && target.similar.length ? target.similar.slice() : (Array.isArray(target.similarArtists) && target.similarArtists.length ? target.similarArtists.slice() : []);
-  if (direct.length) {
-    const arr = includeSelf ? direct : direct.filter(n => n !== target.artist);
-    return Array.from(new Set(arr)).slice(0, limit);
-  }
-  const genre = (target.genre || '').toLowerCase();
-  const setWords = a => {
-    const s = new Set();
-    (a.albums || []).forEach(al => (al.songs || []).forEach(song => {
-      String(song.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).forEach(w => { if (w.length > 2) s.add(w); });
-    }));
-    return s;
-  };
-  const baseWords = setWords(target);
-  const scored = lib
-    .filter(a => a.artist && (includeSelf || a.artist !== target.artist))
-    .map(a => {
-      let score = 0;
-      if (genre && (a.genre || '').toLowerCase() === genre) score += 2;
-      const w = setWords(a);
-      let overlap = 0;
-      baseWords.forEach(x => { if (w.has(x)) overlap++; });
-      score += overlap;
-      return { name: a.artist, score };
-    })
-    .filter(x => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map(x => x.name);
-  return Array.from(new Set(scored));
-},
-**/
 
 
 getSimilarArtists: (artistName, { limit = 12, includeSelf = false } = {}) => {
@@ -300,42 +262,11 @@ getSimilarArtists: (artistName, { limit = 12, includeSelf = false } = {}) => {
       behavior: 'smooth'
     });
   },
-
-
-
-/*****
-getSimilarArtists: (artistRef, { limit = 12, includeSelf = false } = {}) => {
-  const lib = Array.isArray(typeof music !== 'undefined' ? music : null) ? music : (Array.isArray(window.music) ? window.music : []);
-  if (!Array.isArray(lib) || !lib.length) return [];
-  const target = typeof artistRef === 'string' ? lib.find(a => a.artist === artistRef) : artistRef;
-  if (!target || !target.artist) return [];
-  const raw = Array.isArray(target.similar) ? target.similar.slice() : [];
-  if (raw.length) {
-    const arr = includeSelf ? raw : raw.filter(n => n !== target.artist);
-    return Array.from(new Set(arr)).slice(0, limit);
-  }
-  const genre = (target.genre || '').toLowerCase();
-  const scored = lib
-    .filter(a => a.artist && (includeSelf || a.artist !== target.artist))
-    .map(a => ({ name: a.artist, score: ((a.genre || '').toLowerCase() === genre ? 1 : 0) }))
-    .filter(x => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map(x => x.name);
-  return Array.from(new Set(scored));
-}
-*****/
-// utils.getSimilarArtists = (artistRef, opts) => getSimilarArtists(artistRef, opts);
-
-
-// const names = getSimilarArtists(artistData, { limit: 18 });
-// siteMap.setupSimilarArtists({ artist: artistData.artist, similar: names });
-
-
-
-
-
 };
+
+
+
+
 
 const loadingBar = {
   element: null,
